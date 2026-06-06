@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة متابعة مؤشرات التقويم الذاتي – مدرسة الإبداع المدرسي</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <style>
+    :root {
+      --tamayuz:#1a7f37; --tamayuz-bg:#d4f5de;
+      --taqadom:#2563eb; --taqadom-bg:#dbeafe;
+      --intilaaq:#d97706; --intilaaq-bg:#fef3c7;
+      --tahiya:#dc2626;  --tahiya-bg:#fee2e2;
+      --notstart:#6b7280;--notstart-bg:#f3f4f6;
+      --dark:#0f172a; --card:#fff; --page:#f1f5f9;
+      --border:#e2e8f0; --shadow:0 2px 16px rgba(15,23,42,.08);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Tajawal',sans-serif;background:var(--page);color:var(--dark);min-height:100vh}
+
+    /* ── HEADER ── */
+    header{
+      background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#0f4c75 100%);
+      color:#fff;padding:28px 20px 24px;text-align:center;position:relative;overflow:hidden;
+    }
+    header::before{content:'';position:absolute;inset:0;
+      background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");}
+    .school-badge{display:inline-flex;align-items:center;gap:8px;
+      background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+      border-radius:50px;padding:5px 18px;font-size:13px;margin-bottom:14px;backdrop-filter:blur(4px)}
+    header h1{font-size:clamp(17px,3.5vw,26px);font-weight:900;margin-bottom:5px}
+    header p{font-size:13px;opacity:.75}
+    .hdr-stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:20px}
+    .hdr-stat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+      border-radius:12px;padding:10px 18px;text-align:center;backdrop-filter:blur(4px);min-width:80px}
+    .hdr-stat .val{font-size:22px;font-weight:900;line-height:1}
+    .hdr-stat .lbl{font-size:11px;opacity:.75;margin-top:2px}
+
+    /* ── EDIT MODE BANNER ── */
+    .edit-banner{
+      background:#fef3c7;border-bottom:2px solid #f59e0b;
+      padding:10px 20px;display:flex;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;gap:10px;font-size:13px;color:#92400e;
+    }
+    .edit-banner .eb-left{display:flex;align-items:center;gap:8px;font-weight:700}
+    .edit-banner .eb-right{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{
+      padding:7px 18px;border-radius:50px;border:none;font-family:'Tajawal',sans-serif;
+      font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;
+      gap:6px;transition:all .2s;
+    }
+    .btn-primary{background:#0f172a;color:#fff}
+    .btn-primary:hover{background:#1e293b;transform:translateY(-1px)}
+    .btn-success{background:#1a7f37;color:#fff}
+    .btn-success:hover{background:#15652c;transform:translateY(-1px)}
+    .btn-warning{background:#d97706;color:#fff}
+    .btn-warning:hover{background:#b45309;transform:translateY(-1px)}
+    .btn-danger{background:#dc2626;color:#fff}
+    .btn-danger:hover{background:#b91c1c;transform:translateY(-1px)}
+    .btn-outline{background:#fff;color:#0f172a;border:1.5px solid #cbd5e1}
+    .btn-outline:hover{background:#f8fafc;transform:translateY(-1px)}
+    .btn-sm{padding:5px 14px;font-size:12px}
+
+    /* ── CONTAINER ── */
+    .container{max-width:1440px;margin:0 auto;padding:22px 16px}
+
+    /* ── SCORE SECTION ── */
+    .score-section{display:grid;grid-template-columns:280px 1fr;gap:18px;margin-bottom:22px}
+    @media(max-width:880px){.score-section{grid-template-columns:1fr}}
+
+    .overall-card{
+      background:var(--card);border-radius:20px;box-shadow:var(--shadow);
+      padding:26px 22px;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;border-top:5px solid var(--tahiya);gap:8px;
+    }
+    .overall-card .lbl-top{font-size:12px;color:#94a3b8}
+    .big-score{font-size:76px;font-weight:900;line-height:1}
+    .score-sub{font-size:12px;color:#64748b}
+    .score-level{display:inline-flex;align-items:center;gap:6px;border-radius:50px;
+      padding:5px 16px;font-size:13px;font-weight:800}
+    .score-note{font-size:12px;color:#94a3b8;text-align:center;line-height:1.5;margin-top:4px}
+
+    .domains-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    @media(max-width:480px){.domains-grid{grid-template-columns:1fr}}
+
+    .domain-card{
+      background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px 18px;
+      border-right:5px solid #e2e8f0;display:flex;flex-direction:column;gap:8px;
+      transition:transform .2s,box-shadow .2s;
+    }
+    .domain-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(15,23,42,.12)}
+    .d-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+    .d-name{font-size:13px;font-weight:700}
+    .d-score{font-size:32px;font-weight:900}
+    .d-bar-wrap{background:#f1f5f9;border-radius:10px;height:8px;overflow:hidden}
+    .d-bar{height:100%;border-radius:10px;transition:width .8s ease}
+    .d-meta{display:flex;justify-content:space-between;font-size:11px;color:#94a3b8}
+
+    /* ── LEVELS BAR ── */
+    .levels-bar{background:var(--card);border-radius:14px;box-shadow:var(--shadow);
+      padding:14px 18px;margin-bottom:22px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .levels-bar .legend-title{font-size:13px;font-weight:700;color:#64748b;flex:0 0 auto}
+    .level-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:50px;
+      font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;border:2px solid transparent}
+    .level-pill:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+    .level-pill.active{border-color:currentColor;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+
+    /* ── CHARTS ── */
+    .charts-section{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px}
+    @media(max-width:880px){.charts-section{grid-template-columns:1fr}}
+    .chart-card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:22px}
+    .chart-card h3{font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:7px}
+    .chart-wrap{position:relative;height:260px}
+    .chart-wrap-h{position:relative;height:340px}
+
+    /* ── FILTER BAR ── */
+    .filter-bar{background:var(--card);border-radius:14px;box-shadow:var(--shadow);
+      padding:16px 20px;margin-bottom:18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+    .filter-btn{padding:6px 14px;border-radius:50px;border:1.5px solid var(--border);
+      background:#f8fafc;font-size:12px;font-family:'Tajawal',sans-serif;cursor:pointer;
+      transition:all .2s;font-weight:500;color:var(--dark)}
+    .filter-btn:hover{border-color:#94a3b8;background:#f1f5f9}
+    .filter-btn.active{background:#0f172a;color:#fff;border-color:#0f172a}
+    .search-box{padding:7px 16px;border-radius:50px;border:1.5px solid var(--border);
+      font-size:13px;font-family:'Tajawal',sans-serif;width:230px;outline:none;
+      transition:border-color .2s;background:#f8fafc}
+    .search-box:focus{border-color:#2563eb;background:#fff}
+
+    /* ── TABLE ── */
+    .table-card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:26px}
+    .table-card-header{padding:16px 22px;border-bottom:1px solid var(--border);
+      display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:#f8fafc}
+    .table-card-header h3{font-size:15px;font-weight:700;display:flex;align-items:center;gap:7px}
+    .count-badge{background:#e0e7ff;color:#4338ca;border-radius:50px;padding:4px 14px;font-size:12px;font-weight:700}
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    thead tr{background:#f8fafc}
+    thead th{padding:11px 13px;text-align:right;font-size:12px;font-weight:700;color:#64748b;
+      white-space:nowrap;border-bottom:2px solid var(--border)}
+    tbody tr{border-bottom:1px solid #f1f5f9;transition:background .15s}
+    tbody tr:hover{background:#f8fafc}
+    tbody td{padding:10px 13px;font-size:13px;vertical-align:middle}
+    .row-num{font-size:11px;color:#cbd5e1;font-weight:700;text-align:center;width:32px}
+    .code-cell{font-family:monospace;font-size:11px;color:#4338ca;background:#eef2ff;
+      padding:2px 8px;border-radius:6px;white-space:nowrap;font-weight:700}
+    .desc-cell{max-width:300px;min-width:200px;line-height:1.6}
+    .level-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;
+      border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+
+    /* level color classes */
+    .lv-tamayuz  {background:var(--tamayuz-bg); color:var(--tamayuz)}
+    .lv-taqadom  {background:var(--taqadom-bg); color:var(--taqadom)}
+    .lv-intilaaq {background:var(--intilaaq-bg);color:var(--intilaaq)}
+    .lv-tahiya   {background:var(--tahiya-bg);  color:var(--tahiya)}
+    .lv-notstart {background:var(--notstart-bg);color:var(--notstart)}
+
+    .bar-tamayuz  {background:var(--tamayuz)}
+    .bar-taqadom  {background:var(--taqadom)}
+    .bar-intilaaq {background:var(--intilaaq)}
+    .bar-tahiya   {background:var(--tahiya)}
+    .bar-notstart {background:#d1d5db}
+
+    .border-tamayuz  {border-right-color:var(--tamayuz)!important}
+    .border-taqadom  {border-right-color:var(--taqadom)!important}
+    .border-intilaaq {border-right-color:var(--intilaaq)!important}
+    .border-tahiya   {border-right-color:var(--tahiya)!important}
+    .border-notstart {border-right-color:var(--notstart)!important}
+
+    /* bar in table */
+    .bar-cell{min-width:100px}
+    .mini-bar-wrap{background:#f1f5f9;border-radius:6px;height:5px;overflow:hidden;margin-bottom:2px}
+    .mini-bar{height:100%;border-radius:6px;transition:width .5s ease}
+    .bar-val{font-size:12px;font-weight:800}
+
+    /* ── EDITABLE CELL ── */
+    .pct-input{
+      width:72px;padding:4px 8px;border-radius:8px;border:1.5px solid #cbd5e1;
+      font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;text-align:center;
+      outline:none;transition:border-color .2s,box-shadow .2s;background:#f8fafc;
+    }
+    .pct-input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15);background:#fff}
+    .pct-input.empty-val{background:#f9fafb;color:#9ca3af;border-style:dashed}
+    .pct-input.changed{border-color:#d97706;background:#fffbeb}
+
+    .edit-row-btn{
+      background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:8px;
+      font-size:13px;color:#94a3b8;transition:all .2s;font-family:'Tajawal',sans-serif;
+    }
+    .edit-row-btn:hover{background:#f1f5f9;color:#2563eb}
+
+    /* ── MODAL ── */
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(15,23,42,.55);
+      display:flex;align-items:center;justify-content:center;
+      z-index:1000;padding:20px;backdrop-filter:blur(4px);
+      opacity:0;pointer-events:none;transition:opacity .25s;
+    }
+    .modal-overlay.open{opacity:1;pointer-events:all}
+    .modal{
+      background:#fff;border-radius:20px;padding:28px;width:100%;max-width:520px;
+      box-shadow:0 24px 60px rgba(15,23,42,.25);
+      transform:translateY(20px);transition:transform .25s;
+    }
+    .modal-overlay.open .modal{transform:translateY(0)}
+    .modal-title{font-size:16px;font-weight:800;margin-bottom:6px}
+    .modal-sub{font-size:12px;color:#64748b;margin-bottom:20px;line-height:1.5}
+    .modal-code{font-family:monospace;background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:6px;font-weight:700}
+    .modal-field label{font-size:13px;font-weight:700;color:#374151;display:block;margin-bottom:6px}
+    .modal-input{
+      width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid #cbd5e1;
+      font-family:'Tajawal',sans-serif;font-size:20px;font-weight:800;text-align:center;outline:none;
+      transition:border-color .2s;color:#0f172a;
+    }
+    .modal-input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+    .modal-hint{font-size:12px;color:#94a3b8;margin-top:6px;text-align:center}
+    .modal-levels{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
+    .ml-item{border-radius:10px;padding:8px 6px;text-align:center;font-size:11px;font-weight:700;cursor:pointer;transition:transform .15s;border:2px solid transparent}
+    .ml-item:hover{transform:scale(1.04);border-color:currentColor}
+    .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+    .modal-divider{border:none;border-top:1px solid #f1f5f9;margin:16px 0}
+
+    /* ── TOAST ── */
+    .toast{
+      position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;
+      padding:10px 20px;border-radius:50px;font-size:13px;font-weight:600;
+      z-index:2000;opacity:0;transform:translateY(12px);transition:all .3s;pointer-events:none;
+      display:flex;align-items:center;gap:8px;
+    }
+    .toast.show{opacity:1;transform:translateY(0)}
+
+    /* ── NO RESULTS ── */
+    .no-results{text-align:center;padding:44px 20px;color:#94a3b8;font-size:15px}
+    .no-results i{font-size:40px;display:block;margin-bottom:10px;opacity:.4}
+
+    /* ── SCROLL TOP ── */
+    #scrollTop{
+      position:fixed;bottom:24px;left:24px;width:42px;height:42px;border-radius:50%;
+      background:#0f172a;color:#fff;border:none;font-size:15px;cursor:pointer;
+      display:none;align-items:center;justify-content:center;
+      box-shadow:0 4px 16px rgba(0,0,0,.3);z-index:99;
+    }
+    #scrollTop.show{display:flex}
+
+    footer{text-align:center;padding:20px;font-size:12px;color:#94a3b8;line-height:1.8}
+
+    @media(max-width:640px){
+      .search-box{width:100%}
+      .filter-bar{flex-direction:column;align-items:stretch}
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="school-badge"><i class="fas fa-graduation-cap"></i> مدرسة الإبداع المدرسي</div>
+  <h1>📊 لوحة متابعة مؤشرات التقويم الذاتي للمدرسة</h1>
+  <p>العام الدراسي 1447هـ – 2026م &nbsp;|&nbsp; نظام التقويم الوطني المدرسي</p>
+  <div class="hdr-stats">
+    <div class="hdr-stat"><div class="val">49</div><div class="lbl">مؤشراً</div></div>
+    <div class="hdr-stat"><div class="val">4</div><div class="lbl">مجالات</div></div>
+    <div class="hdr-stat"><div class="val" id="hdr-done">—</div><div class="lbl">مؤشر مكتمل</div></div>
+    <div class="hdr-stat"><div class="val" id="hdr-pend">—</div><div class="lbl">لم يبدأ</div></div>
+    <div class="hdr-stat"><div class="val" id="hdr-avg">—</div><div class="lbl">الأداء المرجح</div></div>
+  </div>
+</header>
+
+<!-- EDIT MODE BANNER -->
+<div class="edit-banner" id="editBanner" style="display:none">
+  <div class="eb-left"><i class="fas fa-pencil-alt"></i> وضع التعديل مفعّل – انقر على أي نسبة في الجدول لتعديلها مباشرة</div>
+  <div class="eb-right">
+    <button class="btn btn-success btn-sm" onclick="saveAll()"><i class="fas fa-save"></i> حفظ التغييرات</button>
+    <button class="btn btn-outline btn-sm" onclick="exportCSV()"><i class="fas fa-file-csv"></i> تصدير CSV</button>
+    <button class="btn btn-danger btn-sm" onclick="resetAll()"><i class="fas fa-undo"></i> إعادة الضبط</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- TOOLBAR -->
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+    <button class="btn btn-warning" onclick="toggleEditMode()" id="editModeBtn">
+      <i class="fas fa-edit"></i> تفعيل وضع التعديل
+    </button>
+    <button class="btn btn-primary" onclick="openBulkModal()">
+      <i class="fas fa-table"></i> إدخال نسب متعددة
+    </button>
+  </div>
+
+  <!-- SCORE + DOMAINS -->
+  <section class="score-section">
+    <div class="overall-card" id="overallCard">
+      <div class="lbl-top">المستوى العام للمدرسة</div>
+      <div class="big-score" id="overallScore" style="color:var(--tahiya)">—</div>
+      <div class="score-sub">متوسط الأداء الكلي (الوزن المرجح)</div>
+      <div class="score-level lv-tahiya" id="overallLevel"><i class="fas fa-exclamation-triangle"></i> التهيئة</div>
+      <div class="score-note" id="overallNote">⚠️ يتطلب تدخلات أساسية عاجلة</div>
+    </div>
+    <div class="domains-grid" id="domainsGrid"></div>
+  </section>
+
+  <!-- LEVELS FILTER -->
+  <div class="levels-bar">
+    <span class="legend-title"><i class="fas fa-filter"></i> فلترة حسب المستوى:</span>
+    <span class="level-pill lv-tamayuz active" data-level="all">الكل</span>
+    <span class="level-pill lv-tamayuz"  data-level="التميز">🏆 التميز ≥90%</span>
+    <span class="level-pill lv-taqadom"  data-level="التقدم">⭐ التقدم 75–90%</span>
+    <span class="level-pill lv-intilaaq" data-level="الانطلاق">✓ الانطلاق 50–75%</span>
+    <span class="level-pill lv-tahiya"   data-level="التهيئة">⚠️ التهيئة &lt;50%</span>
+    <span class="level-pill lv-notstart" data-level="لم يبدأ">⏸ لم يبدأ</span>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts-section">
+    <div class="chart-card">
+      <h3><i class="fas fa-chart-bar" style="color:#2563eb"></i> أداء المجالات الأربعة</h3>
+      <div class="chart-wrap"><canvas id="domainsChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3><i class="fas fa-chart-pie" style="color:#7c3aed"></i> توزيع مستويات المؤشرات</h3>
+      <div class="chart-wrap"><canvas id="levelsChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3><i class="fas fa-tasks" style="color:#059669"></i> اكتمال المؤشرات حسب المجال</h3>
+      <div class="chart-wrap"><canvas id="completionChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3><i class="fas fa-list-ol" style="color:#d97706"></i> نسب المؤشرات المكتملة</h3>
+      <div class="chart-wrap-h"><canvas id="hBarChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- FILTER + TABLE -->
+  <div class="filter-bar">
+    <span style="font-size:14px;font-weight:700;flex:0 0 auto"><i class="fas fa-sliders-h"></i> تصفية:</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;flex:1" id="domainFilter">
+      <button class="filter-btn active" data-domain="all">الكل</button>
+      <button class="filter-btn" data-domain="الإدارة المدرسية">الإدارة المدرسية</button>
+      <button class="filter-btn" data-domain="التعليم والتعلم">التعليم والتعلم</button>
+      <button class="filter-btn" data-domain="نواتج التعلم">نواتج التعلم</button>
+      <button class="filter-btn" data-domain="البيئة المدرسية">البيئة المدرسية</button>
+    </div>
+    <input class="search-box" type="search" id="searchBox" placeholder="🔍 بحث عن مؤشر..." />
+  </div>
+
+  <div class="table-card">
+    <div class="table-card-header">
+      <h3><i class="fas fa-table"></i> سجل المؤشرات التفصيلي</h3>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="count-badge" id="countBadge">49 مؤشر</span>
+        <button class="btn btn-outline btn-sm" onclick="toggleEditMode()" id="editBtn2">
+          <i class="fas fa-edit"></i> تعديل
+        </button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:32px">#</th>
+            <th>الرمز</th>
+            <th>المجال</th>
+            <th>المعيار</th>
+            <th>وصف المؤشر</th>
+            <th style="min-width:130px">النسبة %</th>
+            <th>مستوى الأداء</th>
+            <th>المواءمة</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="no-results" id="noResults" style="display:none">
+        <i class="fas fa-search-minus"></i> لا توجد نتائج تطابق بحثك
+      </div>
+    </div>
+  </div>
+</div><!-- /container -->
+
+<!-- EDIT MODAL (single indicator) -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title">✏️ تعديل نسبة المؤشر</div>
+    <div class="modal-sub" id="modalDesc">—</div>
+    <hr class="modal-divider">
+    <div class="modal-field">
+      <label>النسبة المئوية (0 – 100) &nbsp;<span class="modal-code" id="modalCode">—</span></label>
+      <input class="modal-input" type="number" id="modalInput" min="0" max="100" step="1" placeholder="أدخل النسبة..." />
+      <div class="modal-hint">اتركه فارغاً للإشارة إلى "لم يبدأ"</div>
+    </div>
+    <div class="modal-levels" id="modalLevels">
+      <div class="ml-item lv-tamayuz"  onclick="setModalVal(95)">🏆 التميز<br><small>≥90%</small></div>
+      <div class="ml-item lv-taqadom"  onclick="setModalVal(82)">⭐ التقدم<br><small>75–90%</small></div>
+      <div class="ml-item lv-intilaaq" onclick="setModalVal(62)">✓ الانطلاق<br><small>50–75%</small></div>
+      <div class="ml-item lv-tahiya"   onclick="setModalVal(30)">⚠️ التهيئة<br><small>&lt;50%</small></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()"><i class="fas fa-times"></i> إلغاء</button>
+      <button class="btn btn-success" onclick="applyModal()"><i class="fas fa-check"></i> تطبيق</button>
+    </div>
+  </div>
+</div>
+
+<!-- BULK MODAL -->
+<div class="modal-overlay" id="bulkModal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-title">📋 إدخال نسب متعددة دفعة واحدة</div>
+    <div class="modal-sub">أدخل النسب بالترتيب (رمز المؤشر = النسبة) سطر لكل مؤشر. اتركه فارغاً لـ "لم يبدأ"</div>
+    <textarea id="bulkInput" style="width:100%;height:260px;border:1.5px solid #cbd5e1;border-radius:12px;
+      padding:12px;font-family:'Tajawal',sans-serif;font-size:13px;resize:vertical;outline:none;margin-top:10px;
+      line-height:1.8" placeholder="مثال:
+1-1-1-1 = 75
+1-1-1-2 = 66
+1-2-1-1 = 90
+1-2-1-2 = 88
+..."></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeBulkModal()"><i class="fas fa-times"></i> إلغاء</button>
+      <button class="btn btn-success" onclick="applyBulk()"><i class="fas fa-check-double"></i> تطبيق الكل</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<footer>
+  <p>📊 لوحة متابعة مؤشرات التقويم الذاتي | مدرسة الإبداع المدرسي | 1447هـ – 2026م</p>
+  <p>تتغير الألوان والمستويات تلقائياً بناءً على النسب المدخلة</p>
+</footer>
+<button id="scrollTop" title="للأعلى"><i class="fas fa-chevron-up"></i></button>
+
+<!-- ================================================================
+     SCRIPT
+================================================================= -->
+<script>
+Chart.register(ChartDataLabels);
+
+/* ─── LEVELS CONFIG ─── */
+const LV = {
+  tamayuz:  {key:'التميز',   icon:'🏆',cls:'lv-tamayuz',  bar:'bar-tamayuz',  border:'border-tamayuz',  color:'#1a7f37'},
+  taqadom:  {key:'التقدم',   icon:'⭐',cls:'lv-taqadom',  bar:'bar-taqadom',  border:'border-taqadom',  color:'#2563eb'},
+  intilaaq: {key:'الانطلاق',icon:'✓', cls:'lv-intilaaq', bar:'bar-intilaaq', border:'border-intilaaq', color:'#d97706'},
+  tahiya:   {key:'التهيئة', icon:'⚠️',cls:'lv-tahiya',   bar:'bar-tahiya',   border:'border-tahiya',   color:'#dc2626'},
+  notstart: {key:'لم يبدأ', icon:'⏸',cls:'lv-notstart', bar:'bar-notstart', border:'border-notstart', color:'#6b7280'},
+};
+const DOMAIN_COLORS=['#2563eb','#7c3aed','#059669','#f59e0b'];
+const DOMAIN_WEIGHTS={
+  'الإدارة المدرسية':25,'التعليم والتعلم':30,'نواتج التعلم':30,'البيئة المدرسية':15
+};
+
+function getLevel(pct){
+  if(pct===null||pct===undefined) return LV.notstart;
+  if(pct>=90) return LV.tamayuz;
+  if(pct>=75) return LV.taqadom;
+  if(pct>=50) return LV.intilaaq;
+  return LV.tahiya;
+}
+
+/* ─── INDICATORS DATA ─── */
+const INDICATORS=[
+  /* الإدارة المدرسية */
+  {domain:'الإدارة المدرسية',criterion:'التخطيط',code:'1-1-1-1',desc:'تضع المدرسة خطة تشغيلية شاملة وفق أهداف تطويرية محددة.',pct:55,align:'الإدارة المدرسية'},
+  {domain:'الإدارة المدرسية',criterion:'التخطيط',code:'1-1-1-2',desc:'تتابع المدرسة تنفيذ خططها التشغيلية وتطورها بما يضمن تحقيق أهدافها.',pct:66,align:'الإدارة المدرسية'},
+  {domain:'الإدارة المدرسية',criterion:'قيادة العملية التعليمية',code:'1-2-1-1',desc:'تعزز المدرسة القيم الإسلامية والهوية الوطنية.',pct:90,align:'التوجيه الطلابي'},
+  {domain:'الإدارة المدرسية',criterion:'قيادة العملية التعليمية',code:'1-2-1-2',desc:'تطبق المدرسة قيم مهنة التعليم وأخلاقياتها وتتابع الالتزام بها.',pct:88,align:'التوجيه الطلابي'},
+  {domain:'الإدارة المدرسية',criterion:'قيادة العملية التعليمية',code:'1-2-1-3',desc:'تطبق المدرسة إجراءات محددة لدعم الانضباط المدرسي، وتتابع الالتزام بها.',pct:77,align:'التوجيه الطلابي'},
+  {domain:'الإدارة المدرسية',criterion:'قيادة العملية التعليمية',code:'1-2-1-4',desc:'تنفذ المدرسة برامج وأنشطة تربوية داعمة للسلوك الإيجابي لدى المتعلمين، ومنهم ذوو الإعاقة والموهوبون، وتتابعها.',pct:55,align:'التوجيه الطلابي'},
+  {domain:'الإدارة المدرسية',criterion:'قيادة العملية التعليمية',code:'1-2-1-5',desc:'تنفذ المدرسة برامج وأنشطة إثرائية لتطوير مواهب المتعلمين وتهيئتهم للمستقبل، وتتابعها.',pct:null,align:'النشاط الطلابي'},
+  {domain:'الإدارة المدرسية',criterion:'المجتمع المدرسي',code:'1-3-1-1',desc:'تعزز المدرسة بناء العلاقات الإيجابية والتعاون في المجتمع المدرسي.',pct:99,align:'النشاط الطلابي'},
+  {domain:'الإدارة المدرسية',criterion:'المجتمع المدرسي',code:'1-3-1-2',desc:'تعزز المدرسة مشاركة الأسرة في تعلم أبنائهم، والتحضير لمستقبلهم.',pct:88,align:'التوجيه الطلابي'},
+  {domain:'الإدارة المدرسية',criterion:'المجتمع المدرسي',code:'1-3-1-3',desc:'تعزز المدرسة الشراكة المجتمعية لدعم التعلم والتأثير الإيجابي في المجتمع.',pct:null,align:'التوجيه'},
+  {domain:'الإدارة المدرسية',criterion:'التطوير المؤسسي',code:'1-4-1-1',desc:'توفر المدرسة كادراً تعليمياً مكتملاً ومؤهلاً بما يتسق مع المهام الموكلة له.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'الإدارة المدرسية',criterion:'التطوير المؤسسي',code:'1-4-1-2',desc:'توفر المدرسة كادراً إدارياً مكتملاً ومؤهلاً بما يتسق مع المهام الموكلة له.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'الإدارة المدرسية',criterion:'التطوير المؤسسي',code:'1-4-1-3',desc:'تنظم المدرسة الملاك والاستدامة المالية.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'الإدارة المدرسية',criterion:'التطوير المؤسسي',code:'1-4-1-4',desc:'تدعم المدرسة منسوبيها للحصول على الرخصة المهنية، وتتابعها.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'الإدارة المدرسية',criterion:'التطوير المؤسسي',code:'1-4-1-5',desc:'تدعم المدرسة التطوير المهني لمنسوبيها وفقاً لنتائج التقويم وتحليل احتياجاتهم.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'الإدارة المدرسية',criterion:'التطوير المؤسسي',code:'1-4-1-6',desc:'تطبق المدرسة التقويم الذاتي المبني على المعايير المعتمدة من الهيئة بشكل مستمر.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'الإدارة المدرسية',criterion:'التطوير المؤسسي',code:'1-4-1-7',desc:'تنفذ المدرسة خطة التحسين بناءً على نتائج التقويم المدرسي، وتتابعها.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'الإدارة المدرسية',criterion:'حقوق المتعلم وحمايته',code:'1-5-1-1',desc:'تلتزم المدرسة بالمحافظة على حقوق المتعلمين، وحمايتهم.',pct:null,align:'التوجيه الطلابي'},
+  {domain:'الإدارة المدرسية',criterion:'حقوق المتعلم وحمايته',code:'1-5-1-2',desc:'توفر المدرسة مناخاً آمناً للتعلم والنمو نفسياً واجتماعياً.',pct:null,align:'التوجيه الطلابي'},
+  /* التعليم والتعلم */
+  {domain:'التعليم والتعلم',criterion:'بناء خبرات التعلم',code:'2-1-1-1',desc:'توفر المدرسة فرصاً متكافئة للتعلم تلبي احتياجات المتعلمين، ومنهم ذوو الإعاقة والموهوبون.',pct:null,align:'التوجيه الطلابي'},
+  {domain:'التعليم والتعلم',criterion:'بناء خبرات التعلم',code:'2-1-1-2',desc:'تدعم المدرسة تنفيذ المناهج بما يحقق نواتج التعلم المستهدفة.',pct:null,align:'التدريس والتعلم'},
+  {domain:'التعليم والتعلم',criterion:'بناء خبرات التعلم',code:'2-1-1-3',desc:'تنوع المدرسة في استراتيجيات التعليم والتعلم لتلبية احتياجات المتعلمين ودعم تعلمهم.',pct:null,align:'التدريس والتعلم'},
+  {domain:'التعليم والتعلم',criterion:'بناء خبرات التعلم',code:'2-1-1-4',desc:'تفعل المدرسة التقنية الرقمية لدعم تعلم المتعلمين وتلبية احتياجاتهم.',pct:null,align:'التدريس والتعلم'},
+  {domain:'التعليم والتعلم',criterion:'بناء خبرات التعلم',code:'2-1-1-5',desc:'تنفذ المدرسة أنشطة تعلم تطبيقية ترتبط بحياة المتعلمين.',pct:null,align:'التدريس والتعلم'},
+  {domain:'التعليم والتعلم',criterion:'بناء خبرات التعلم',code:'2-1-1-6',desc:'تنمي المدرسة المهارات القرائية والعددية الأساسية لدى المتعلمين.',pct:0,align:'التدريس والتعلم'},
+  {domain:'التعليم والتعلم',criterion:'بناء خبرات التعلم',code:'2-1-1-7',desc:'تنمي المدرسة مهارات التفكير والبحث والابتكار لدى المتعلمين.',pct:null,align:'التدريس والتعلم'},
+  {domain:'التعليم والتعلم',criterion:'بناء خبرات التعلم',code:'2-1-1-8',desc:'تنمي المدرسة المهارات العاطفية والاجتماعية لدى المتعلمين.',pct:null,align:'التدريس والتعلم'},
+  {domain:'التعليم والتعلم',criterion:'بناء خبرات التعلم',code:'2-1-1-9',desc:'تعزز المدرسة دافعية المتعلمين للتعلم والاستمتاع به.',pct:null,align:'التدريس والتعلم'},
+  {domain:'التعليم والتعلم',criterion:'تقويم التعلم',code:'2-2-1-1',desc:'تطبق المدرسة أساليب وأدوات تقويم متنوعة للكشف عن مستويات أداء المتعلمين المختلفة.',pct:null,align:'التدريس والتعلم'},
+  {domain:'التعليم والتعلم',criterion:'تقويم التعلم',code:'2-2-1-2',desc:'تطبق المدرسة أساليب وأدوات متنوعة لتقويم نواتج التعلم المستهدفة في مناهج التعليم.',pct:null,align:'التدريس والتعلم'},
+  {domain:'التعليم والتعلم',criterion:'تقويم التعلم',code:'2-2-1-3',desc:'تحلل المدرسة نتائج التقويم وتوظفها في تحسين عمليات التعليم والتعلم والتقويم.',pct:null,align:'التوجيه الطلابي'},
+  {domain:'التعليم والتعلم',criterion:'تقويم التعلم',code:'2-2-1-4',desc:'تقدم المدرسة التغذية الراجعة للمتعلمين وأولياء أمورهم، وتتابع تقدمهم بشكل مستمر.',pct:null,align:'التدريس والتعلم'},
+  /* نواتج التعلم */
+  {domain:'نواتج التعلم',criterion:'التحصيل التعليمي',code:'3-1-1-1',desc:'يحقق المتعلمون نتائج مرتفعة في مجال القراءة وفقاً للاختبارات الوطنية.',pct:null,align:'نواتج التعلم'},
+  {domain:'نواتج التعلم',criterion:'التحصيل التعليمي',code:'3-1-1-2',desc:'يحقق المتعلمون نتائج مرتفعة في مجال الرياضيات وفقاً للاختبارات الوطنية.',pct:null,align:'نواتج التعلم'},
+  {domain:'نواتج التعلم',criterion:'التحصيل التعليمي',code:'3-1-1-3',desc:'يحقق المتعلمون نتائج مرتفعة في مجال العلوم وفقاً للاختبارات الوطنية.',pct:null,align:'نواتج التعلم'},
+  {domain:'نواتج التعلم',criterion:'التحصيل التعليمي',code:'3-1-1-4',desc:'يحقق المتعلمون تقدماً في مجال القراءة قياساً على مستوى أداء المدرسة السابق.',pct:null,align:'نواتج التعلم'},
+  {domain:'نواتج التعلم',criterion:'التحصيل التعليمي',code:'3-1-1-5',desc:'يحقق المتعلمون تقدماً في مجال الرياضيات قياساً على مستوى أداء المدرسة السابق.',pct:null,align:'نواتج التعلم'},
+  {domain:'نواتج التعلم',criterion:'التحصيل التعليمي',code:'3-1-1-6',desc:'يحقق المتعلمون تقدماً في مجال العلوم قياساً على مستوى أداء المدرسة السابق.',pct:null,align:'نواتج التعلم'},
+  {domain:'نواتج التعلم',criterion:'التطور الشخصي والصحي والاجتماعي',code:'3-2-1-1',desc:'يظهر المتعلمون الاعتزاز بالقيم والهوية الوطنية.',pct:null,align:'النشاط الطلابي'},
+  {domain:'نواتج التعلم',criterion:'التطور الشخصي والصحي والاجتماعي',code:'3-2-1-2',desc:'يظهر المتعلمون اتجاهات إيجابية نحو ذواتهم والآخرين.',pct:null,align:'التوجيه الطلابي'},
+  {domain:'نواتج التعلم',criterion:'التطور الشخصي والصحي والاجتماعي',code:'3-2-1-3',desc:'يظهر المتعلمون التزاماً بالممارسات الصحية السليمة.',pct:null,align:'التوجيه الطلابي'},
+  {domain:'نواتج التعلم',criterion:'التطور الشخصي والصحي والاجتماعي',code:'3-2-1-4',desc:'يشارك المتعلمون في الأنشطة المجتمعية والأعمال التطوعية.',pct:null,align:'النشاط الطلابي'},
+  {domain:'نواتج التعلم',criterion:'التطور الشخصي والصحي والاجتماعي',code:'3-2-1-5',desc:'يلتزم المتعلمون بقواعد السلوك والانضباط المدرسي.',pct:null,align:'التوجيه الطلابي'},
+  {domain:'نواتج التعلم',criterion:'التطور الشخصي والصحي والاجتماعي',code:'3-2-1-6',desc:'يظهر المتعلمون الاستقلالية والقدرة على التعلم الذاتي.',pct:null,align:'التوجيه الطلابي'},
+  {domain:'نواتج التعلم',criterion:'التطور الشخصي والصحي والاجتماعي',code:'3-2-1-7',desc:'يظهر المتعلمون اعتزازاً بثقافتهم واحتراماً للتنوع الثقافي في المجتمع.',pct:null,align:'التوجيه الطلابي'},
+  /* البيئة المدرسية */
+  {domain:'البيئة المدرسية',criterion:'المبنى المدرسي',code:'4-1-1-1',desc:'توفر المدرسة مبنى تعليمياً يستوفي المواصفات والاشتراطات المعتمدة من حيث النوع والخدمات المساندة.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'البيئة المدرسية',criterion:'المبنى المدرسي',code:'4-1-1-2',desc:'تنظيم مبنى المدرسة ملائم لعدد المتعلمين وخصائص المرحلة العمرية، ومنهم ذوو الإعاقة.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'البيئة المدرسية',criterion:'المبنى المدرسي',code:'4-1-1-3',desc:'تتوافر فصول ومعامل ملائمة للعملية التعليمية تلبي احتياجات المتعلمين، ومنهم ذوو الإعاقة.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'البيئة المدرسية',criterion:'المبنى المدرسي',code:'4-1-1-4',desc:'تلبي المرافق والتجهيزات والخدمات المساندة احتياجات المتعلمين، ومنهم ذوو الإعاقة.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'البيئة المدرسية',criterion:'الأمن والسلامة',code:'4-2-1-1',desc:'تتوافر في مبنى المدرسة ومرافقها جميع متطلبات الأمن والسلامة.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'البيئة المدرسية',criterion:'الأمن والسلامة',code:'4-2-1-2',desc:'تتابع المدرسة صيانة المبنى وجميع مرافقه وتجهيزاته بشكل دوري.',pct:null,align:'الإدارة المدرسية'},
+  {domain:'البيئة المدرسية',criterion:'الأمن والسلامة',code:'4-2-1-3',desc:'تتابع المدرسة نظافة المبنى المدرسي وجميع مرافقه بشكل مستمر.',pct:null,align:'الإدارة المدرسية'},
+];
+
+/* ─── GLOBAL STATE ─── */
+let editMode = false;
+let activeLevel = 'all';
+let activeDomain = 'all';
+let searchTerm = '';
+let currentEditIdx = null;
+let charts = {};
+
+/* ─── SAVE / LOAD from localStorage ─── */
+function loadSaved(){
+  try{
+    const saved=localStorage.getItem('indicators_pct');
+    if(saved){
+      const data=JSON.parse(saved);
+      INDICATORS.forEach((ind,i)=>{
+        if(data[ind.code]!==undefined) ind.pct=data[ind.code];
+      });
+    }
+  }catch(e){}
+}
+function persistSave(){
+  const data={};
+  INDICATORS.forEach(ind=>data[ind.code]=ind.pct);
+  localStorage.setItem('indicators_pct',JSON.stringify(data));
+}
+
+/* ─── CALCULATIONS ─── */
+function calcDomainAvg(domain){
+  const items=INDICATORS.filter(i=>i.domain===domain&&i.pct!==null);
+  if(!items.length) return 0;
+  return Math.round(items.reduce((s,i)=>s+i.pct,0)/items.length*10)/10;
+}
+function calcWeightedAvg(){
+  const domains=['الإدارة المدرسية','التعليم والتعلم','نواتج التعلم','البيئة المدرسية'];
+  let total=0,weights=0;
+  domains.forEach(d=>{
+    const avg=calcDomainAvg(d);
+    const w=DOMAIN_WEIGHTS[d];
+    total+=avg*w/100;
+    weights+=w;
+  });
+  return Math.round(total*10)/10;
+}
+
+/* ─── HEADER STATS ─── */
+function updateHeader(){
+  document.getElementById('hdr-done').textContent=INDICATORS.filter(i=>i.pct!==null).length;
+  document.getElementById('hdr-pend').textContent=INDICATORS.filter(i=>i.pct===null).length;
+  const avg=calcWeightedAvg();
+  document.getElementById('hdr-avg').textContent=avg+'%';
+}
+
+/* ─── OVERALL CARD ─── */
+function updateOverallCard(){
+  const avg=calcWeightedAvg();
+  const lv=getLevel(avg);
+  const el=document.getElementById('overallScore');
+  el.textContent=avg+'%';
+  el.style.color=lv.color;
+  const lvEl=document.getElementById('overallLevel');
+  lvEl.className='score-level '+lv.cls;
+  lvEl.innerHTML=lv.icon+' مستوى '+lv.key;
+  const noteMap={
+    'التميز':'✅ أداء متميز – استدامة وتطوير',
+    'التقدم':'📈 أداء جيد – تطوير مستمر',
+    'الانطلاق':'⚠️ أداء مقبول – تحسينات جوهرية مطلوبة',
+    'التهيئة':'🚨 يتطلب تدخلات أساسية عاجلة',
+    'لم يبدأ':'⏸ لم تبدأ عملية التقويم',
+  };
+  document.getElementById('overallNote').textContent=noteMap[lv.key]||'';
+  const card=document.getElementById('overallCard');
+  card.style.borderTopColor=lv.color;
+}
+
+/* ─── DOMAIN CARDS ─── */
+const DOMAIN_META=[
+  {name:'الإدارة المدرسية',icon:'🏫',weight:25,count:19},
+  {name:'التعليم والتعلم',icon:'📚',weight:30,count:13},
+  {name:'نواتج التعلم',icon:'🎯',weight:30,count:13},
+  {name:'البيئة المدرسية',icon:'🏗️',weight:15,count:7},
+];
+function renderDomainCards(){
+  const grid=document.getElementById('domainsGrid');
+  grid.innerHTML='';
+  DOMAIN_META.forEach((d,i)=>{
+    const avg=calcDomainAvg(d.name);
+    const lv=getLevel(avg);
+    const card=document.createElement('div');
+    card.className=`domain-card ${lv.border}`;
+    card.innerHTML=`
+      <div class="d-top">
+        <div>
+          <div style="font-size:10px;color:#94a3b8;margin-bottom:2px">${d.icon} المجال ${i+1}</div>
+          <div class="d-name">${d.name}</div>
+        </div>
+        <span class="level-badge ${lv.cls}">${lv.icon} ${lv.key}</span>
+      </div>
+      <div class="d-score" style="color:${DOMAIN_COLORS[i]}">${avg}%</div>
+      <div class="d-bar-wrap"><div class="d-bar ${lv.bar}" style="width:${Math.min(avg,100)}%"></div></div>
+      <div class="d-meta"><span>${d.count} مؤشر</span><span>وزن ${d.weight}%</span></div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+/* ─── CHARTS ─── */
+function buildCharts(){
+  /* 1 – domains bar */
+  charts.domains=new Chart(document.getElementById('domainsChart'),{
+    type:'bar',
+    data:{
+      labels:DOMAIN_META.map(d=>d.name),
+      datasets:[{
+        data:DOMAIN_META.map(d=>calcDomainAvg(d.name)),
+        backgroundColor:DOMAIN_COLORS.map(c=>c+'bb'),
+        borderColor:DOMAIN_COLORS,borderWidth:2,borderRadius:12,borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        datalabels:{anchor:'end',align:'top',formatter:v=>v+'%',
+          font:{family:'Tajawal',weight:'800',size:13},color:'#0f172a'}
+      },
+      scales:{
+        y:{min:0,max:110,ticks:{callback:v=>v+'%',font:{family:'Tajawal'}},grid:{color:'#f1f5f9'}},
+        x:{ticks:{font:{family:'Tajawal',size:11}},grid:{display:false}}
+      }
+    }
+  });
+  /* 2 – doughnut */
+  function lvCnt(key){ return INDICATORS.filter(i=>i.pct!==null&&getLevel(i.pct).key===key).length; }
+  const notStartCnt=INDICATORS.filter(i=>i.pct===null).length;
+  charts.levels=new Chart(document.getElementById('levelsChart'),{
+    type:'doughnut',
+    data:{
+      labels:['🏆 التميز','⭐ التقدم','✓ الانطلاق','⚠️ التهيئة','⏸ لم يبدأ'],
+      datasets:[{
+        data:[lvCnt('التميز'),lvCnt('التقدم'),lvCnt('الانطلاق'),lvCnt('التهيئة'),notStartCnt],
+        backgroundColor:['#1a7f37','#2563eb','#d97706','#dc2626','#9ca3af'],
+        borderWidth:4,borderColor:'#fff',hoverOffset:8
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'62%',
+      plugins:{
+        legend:{position:'bottom',labels:{font:{family:'Tajawal',size:11},padding:12,boxWidth:12}},
+        datalabels:{formatter:(v)=>v>0?v:'',font:{family:'Tajawal',weight:'700',size:13},color:'#fff'}
+      }
+    }
+  });
+  /* 3 – completion stacked */
+  charts.completion=new Chart(document.getElementById('completionChart'),{
+    type:'bar',
+    data:{
+      labels:DOMAIN_META.map(d=>d.name),
+      datasets:[
+        {label:'✅ مكتمل',data:DOMAIN_META.map(d=>INDICATORS.filter(i=>i.domain===d.name&&i.pct!==null).length),backgroundColor:'#10b981bb',borderRadius:6,stack:'s'},
+        {label:'⏸ لم يبدأ',data:DOMAIN_META.map(d=>INDICATORS.filter(i=>i.domain===d.name&&i.pct===null).length),backgroundColor:'#e2e8f0',borderRadius:6,stack:'s'}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{family:'Tajawal',size:11}}},
+        datalabels:{formatter:v=>v||'',font:{family:'Tajawal',weight:'700',size:12},color:'#fff'}},
+      scales:{
+        x:{stacked:true,ticks:{font:{family:'Tajawal',size:10}},grid:{display:false}},
+        y:{stacked:true,ticks:{font:{family:'Tajawal'}},grid:{color:'#f1f5f9'}}
+      }
+    }
+  });
+  /* 4 – horizontal bar completed */
+  refreshHBar();
+}
+
+function refreshHBar(){
+  const completed=INDICATORS.filter(i=>i.pct!==null);
+  const ctx=document.getElementById('hBarChart');
+  if(charts.hbar){ charts.hbar.destroy(); }
+  charts.hbar=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:completed.map(i=>`(${i.code})`),
+      datasets:[{
+        data:completed.map(i=>i.pct),
+        backgroundColor:completed.map(i=>getLevel(i.pct).color+'bb'),
+        borderColor:completed.map(i=>getLevel(i.pct).color),
+        borderWidth:1.5,borderRadius:5,borderSkipped:false
+      }]
+    },
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        datalabels:{anchor:'end',align:'right',formatter:v=>v+'%',
+          font:{family:'Tajawal',weight:'700',size:10},color:'#0f172a'}
+      },
+      scales:{
+        x:{min:0,max:115,ticks:{callback:v=>v+'%',font:{family:'Tajawal'}},grid:{color:'#f1f5f9'}},
+        y:{ticks:{font:{family:'Tajawal',size:10}},grid:{display:false}}
+      }
+    }
+  });
+}
+
+function updateCharts(){
+  /* domains */
+  charts.domains.data.datasets[0].data=DOMAIN_META.map(d=>calcDomainAvg(d.name));
+  charts.domains.update();
+  /* doughnut */
+  function lvCnt(key){ return INDICATORS.filter(i=>i.pct!==null&&getLevel(i.pct).key===key).length; }
+  const notStartCnt=INDICATORS.filter(i=>i.pct===null).length;
+  charts.levels.data.datasets[0].data=[lvCnt('التميز'),lvCnt('التقدم'),lvCnt('الانطلاق'),lvCnt('التهيئة'),notStartCnt];
+  charts.levels.update();
+  /* completion */
+  charts.completion.data.datasets[0].data=DOMAIN_META.map(d=>INDICATORS.filter(i=>i.domain===d.name&&i.pct!==null).length);
+  charts.completion.data.datasets[1].data=DOMAIN_META.map(d=>INDICATORS.filter(i=>i.domain===d.name&&i.pct===null).length);
+  charts.completion.update();
+  /* hbar */
+  refreshHBar();
+}
+
+/* ─── TABLE ─── */
+function domainTagCls(domain){
+  const map={'الإدارة المدرسية':'lv-taqadom','التعليم والتعلم':'lv-intilaaq','نواتج التعلم':'lv-notstart','البيئة المدرسية':'lv-tamayuz'};
+  return map[domain]||'lv-notstart';
+}
+
+function renderTable(){
+  const tbody=document.getElementById('tableBody');
+  tbody.innerHTML='';
+  let visible=0;
+  INDICATORS.forEach((ind,idx)=>{
+    const lv=getLevel(ind.pct);
+    if(activeLevel!=='all'&&lv.key!==activeLevel) return;
+    if(activeDomain!=='all'&&ind.domain!==activeDomain) return;
+    if(searchTerm){
+      const hay=(ind.desc+ind.code+ind.domain+ind.criterion+ind.align).toLowerCase();
+      if(!hay.includes(searchTerm.toLowerCase())) return;
+    }
+    visible++;
+    const pctStr=ind.pct!==null?ind.pct+'%':'—';
+    const barW=ind.pct!==null?Math.min(ind.pct,100):0;
+
+    const tr=document.createElement('tr');
+    tr.dataset.idx=idx;
+
+    /* pct cell */
+    let pctCell;
+    if(editMode){
+      pctCell=`
+        <td class="bar-cell">
+          <div style="display:flex;align-items:center;gap:6px">
+            <input class="pct-input ${ind.pct===null?'empty-val':''}"
+              type="number" min="0" max="100"
+              value="${ind.pct!==null?ind.pct:''}"
+              placeholder="—"
+              data-idx="${idx}"
+              onchange="onInlineChange(this,${idx})"
+              oninput="onInlineChange(this,${idx})"
+            />
+            <button class="edit-row-btn" onclick="openModal(${idx})" title="تعديل متقدم">
+              <i class="fas fa-expand-alt"></i>
+            </button>
+          </div>
+        </td>`;
+    } else {
+      pctCell=`
+        <td class="bar-cell" onclick="${editMode?'':''}" style="cursor:${editMode?'pointer':'default'}">
+          <div class="mini-bar-wrap"><div class="mini-bar ${lv.bar}" style="width:${barW}%"></div></div>
+          <span class="bar-val" style="color:${lv.color}">${pctStr}</span>
+        </td>`;
+    }
+
+    tr.innerHTML=`
+      <td class="row-num">${idx+1}</td>
+      <td><span class="code-cell">${ind.code}</span></td>
+      <td><span class="level-badge ${domainTagCls(ind.domain)}" style="font-size:11px">${ind.domain}</span></td>
+      <td style="font-size:12px;color:#64748b;min-width:110px;white-space:nowrap">${ind.criterion}</td>
+      <td class="desc-cell">${ind.desc}</td>
+      ${pctCell}
+      <td><span class="level-badge ${lv.cls}">${lv.icon} ${lv.key}</span></td>
+      <td style="font-size:12px;color:#64748b;white-space:nowrap">${ind.align}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('countBadge').textContent=visible+' مؤشر';
+  document.getElementById('noResults').style.display=visible===0?'':'none';
+}
+
+/* ─── INLINE EDIT ─── */
+function onInlineChange(input,idx){
+  const val=input.value.trim();
+  input.classList.add('changed');
+  if(val===''||val===null){
+    INDICATORS[idx].pct=null;
+    input.classList.add('empty-val');
+  } else {
+    const n=Math.min(100,Math.max(0,parseFloat(val)));
+    INDICATORS[idx].pct=n;
+    input.classList.remove('empty-val');
+    input.value=n;
+  }
+  /* update level badge in same row */
+  const row=input.closest('tr');
+  if(row){
+    const lv=getLevel(INDICATORS[idx].pct);
+    const badge=row.querySelector('.level-badge:last-of-type');
+    if(badge){ badge.className=`level-badge ${lv.cls}`; badge.textContent=`${lv.icon} ${lv.key}`; }
+  }
+  refreshDashboard(false);
+}
+
+/* ─── EDIT MODE TOGGLE ─── */
+function toggleEditMode(){
+  editMode=!editMode;
+  document.getElementById('editBanner').style.display=editMode?'flex':'none';
+  document.getElementById('editModeBtn').innerHTML=editMode
+    ?'<i class="fas fa-eye"></i> وضع العرض'
+    :'<i class="fas fa-edit"></i> تفعيل وضع التعديل';
+  document.getElementById('editBtn2').innerHTML=editMode
+    ?'<i class="fas fa-eye"></i> عرض'
+    :'<i class="fas fa-edit"></i> تعديل';
+  renderTable();
+  showToast(editMode?'✏️ وضع التعديل مفعّل':'👁️ وضع العرض مفعّل');
+}
+
+/* ─── MODAL ─── */
+function openModal(idx){
+  currentEditIdx=idx;
+  const ind=INDICATORS[idx];
+  document.getElementById('modalDesc').innerHTML=`<span class="modal-code">${ind.code}</span> &nbsp;${ind.desc}`;
+  document.getElementById('modalCode').textContent=ind.code;
+  document.getElementById('modalInput').value=ind.pct!==null?ind.pct:'';
+  document.getElementById('editModal').classList.add('open');
+  setTimeout(()=>document.getElementById('modalInput').focus(),200);
+}
+function closeModal(){document.getElementById('editModal').classList.remove('open')}
+function setModalVal(v){document.getElementById('modalInput').value=v}
+function applyModal(){
+  if(currentEditIdx===null) return;
+  const val=document.getElementById('modalInput').value.trim();
+  INDICATORS[currentEditIdx].pct=val===''?null:Math.min(100,Math.max(0,parseFloat(val)));
+  closeModal();
+  refreshDashboard(true);
+  persistSave();
+  showToast('✅ تم تحديث المؤشر '+INDICATORS[currentEditIdx].code);
+}
+
+/* ─── BULK MODAL ─── */
+function openBulkModal(){
+  /* prefill with current data */
+  const lines=INDICATORS.map(i=>`${i.code} = ${i.pct!==null?i.pct:''}`);
+  document.getElementById('bulkInput').value=lines.join('\n');
+  document.getElementById('bulkModal').classList.add('open');
+}
+function closeBulkModal(){document.getElementById('bulkModal').classList.remove('open')}
+function applyBulk(){
+  const lines=document.getElementById('bulkInput').value.split('\n');
+  let updated=0;
+  lines.forEach(line=>{
+    const m=line.match(/^([\d\-]+)\s*=\s*(\d*\.?\d*)\s*$/);
+    if(!m) return;
+    const code=m[1].trim();
+    const val=m[2].trim();
+    const ind=INDICATORS.find(i=>i.code===code);
+    if(!ind) return;
+    ind.pct=val===''?null:Math.min(100,Math.max(0,parseFloat(val)));
+    updated++;
+  });
+  closeBulkModal();
+  refreshDashboard(true);
+  persistSave();
+  showToast(`✅ تم تحديث ${updated} مؤشر`);
+}
+
+/* ─── SAVE / RESET / EXPORT ─── */
+function saveAll(){
+  persistSave();
+  showToast('💾 تم حفظ جميع التغييرات');
+}
+function resetAll(){
+  if(!confirm('هل أنت متأكد من إعادة تعيين جميع النسب إلى القيم الأصلية؟')) return;
+  localStorage.removeItem('indicators_pct');
+  location.reload();
+}
+function exportCSV(){
+  const hdr='الرمز,المجال,المعيار,الوصف,النسبة,المستوى,المواءمة\n';
+  const rows=INDICATORS.map(i=>{
+    const lv=getLevel(i.pct);
+    return [i.code,i.domain,i.criterion,`"${i.desc}"`,i.pct!==null?i.pct:'',lv.key,i.align].join(',');
+  }).join('\n');
+  const blob=new Blob(['\uFEFF'+hdr+rows],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='مؤشرات_التقويم_الذاتي.csv';
+  a.click();
+  showToast('📥 جاري تحميل ملف CSV...');
+}
+
+/* ─── REFRESH DASHBOARD ─── */
+function refreshDashboard(reRenderTable){
+  updateHeader();
+  updateOverallCard();
+  renderDomainCards();
+  updateCharts();
+  if(reRenderTable) renderTable();
+}
+
+/* ─── TOAST ─── */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+/* ─── FILTER & SEARCH ─── */
+document.querySelectorAll('.levels-bar .level-pill').forEach(pill=>{
+  pill.addEventListener('click',()=>{
+    document.querySelectorAll('.levels-bar .level-pill').forEach(p=>p.classList.remove('active'));
+    pill.classList.add('active');
+    activeLevel=pill.dataset.level;
+    renderTable();
+  });
+});
+document.getElementById('domainFilter').addEventListener('click',e=>{
+  const btn=e.target.closest('.filter-btn');
+  if(!btn) return;
+  document.querySelectorAll('#domainFilter .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  activeDomain=btn.dataset.domain;
+  renderTable();
+});
+document.getElementById('searchBox').addEventListener('input',e=>{
+  searchTerm=e.target.value.trim();
+  renderTable();
+});
+
+/* close modals on overlay click */
+document.getElementById('editModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
+document.getElementById('bulkModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeBulkModal(); });
+/* Enter key in modal */
+document.getElementById('modalInput').addEventListener('keydown',e=>{ if(e.key==='Enter') applyModal(); });
+
+/* ─── SCROLL TOP ─── */
+const scrollBtn=document.getElementById('scrollTop');
+window.addEventListener('scroll',()=>scrollBtn.classList.toggle('show',scrollY>400));
+scrollBtn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+/* ─── INIT ─── */
+loadSaved();
+updateHeader();
+updateOverallCard();
+renderDomainCards();
+buildCharts();
+renderTable();
+</script>
+</body>
+</html>
