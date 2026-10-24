@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>قناة قادة المدارس</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>body{margin:0}</style>
+<style>
+/* Layout: one centered invitation card with a double gold frame; seal on top, form inside. */
+:root{
+  --bg:#F3E9DC;
+  --card:#FFFBF5;
+  --ink:#2A1418;
+  --muted:#7A6560;
+  --wine:#6B1E2E;
+  --gold:#B8901F;
+  --line:#E2D3BF;
+  --field:#FFFFFF;
+  --err:#B42318;
+  --display:"IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1C1012;--card:#28171B;--ink:#F3E9DC;--muted:#BFA9A2;--wine:#C9566C;--gold:#D9B44A;--line:#45292F;--field:#1F1215;--err:#F97066;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1C1012;--card:#28171B;--ink:#F3E9DC;--muted:#BFA9A2;--wine:#C9566C;--gold:#D9B44A;--line:#45292F;--field:#1F1215;--err:#F97066;color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 48px}
+.wrap{max-width:520px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--gold);outline:1px solid var(--gold);outline-offset:-8px;
+  border-radius:4px;padding:40px 28px 32px;position:relative}
+.seal{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;background:var(--wine);display:grid;place-items:center;
+  box-shadow:0 0 0 3px var(--card),0 0 0 4px var(--gold)}
+.seal svg{width:30px;height:30px}
+.eyebrow{text-align:center;color:var(--gold);font-weight:600;font-size:13px;letter-spacing:.04em}
+h1{font-family:var(--display);font-weight:600;color:var(--wine);text-align:center;font-size:clamp(28px,7vw,36px);line-height:1.3;margin:6px 0 10px;text-wrap:balance}
+.lead{text-align:center;color:var(--muted);margin:0 auto 22px;max-width:40ch}
+.perks{list-style:none;margin:0 0 26px;padding:16px 0;border-block:1px solid var(--line);display:grid;gap:10px}
+.perks li{display:flex;gap:10px;align-items:flex-start}
+.perks li::before{content:"";flex:none;width:8px;height:8px;margin-top:10px;background:var(--gold);transform:rotate(45deg)}
+form{display:grid;gap:16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:440px){.row{grid-template-columns:1fr}}
+label{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+.opt{font-weight:400;color:var(--muted)}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:11px 12px;min-height:46px}
+input:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold)}
+input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--err)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.error{font-size:13px;color:var(--err);margin-top:4px}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted)}
+.consent input{width:18px;height:18px;min-height:0;margin-top:5px;accent-color:var(--wine);flex:none}
+.consent label{font-weight:400;margin:0}
+button{font:inherit;font-weight:600;font-size:17px;cursor:pointer;border:0;border-radius:6px;padding:14px 18px;min-height:52px;width:100%}
+.primary{background:var(--wine);color:#FFFBF5}
+.primary:hover{filter:brightness(1.08)}
+.ghost{background:transparent;color:var(--wine);border:1px solid var(--wine)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.note{font-size:12px;color:var(--muted);text-align:center;margin:4px 0 0}
+.done{text-align:center;display:grid;gap:14px}
+.done h2{font-family:var(--display);font-weight:600;color:var(--wine);font-size:26px;margin:0}
+.msg{white-space:pre-wrap;text-align:right;background:var(--field);border:1px dashed var(--line);border-radius:6px;padding:12px;font-size:14px;margin:0}
+.wa{display:block;text-decoration:none;text-align:center;background:var(--wine);color:#FFFBF5;border-radius:6px;padding:14px;font-weight:600}
+.foot{text-align:center;font-size:12px;color:var(--muted);margin-top:18px}
+@media (prefers-reduced-motion:no-preference){.card{animation:rise .5s ease-out both}@keyframes rise{from{transform:translateY(8px)}to{transform:none}}}
+</style>
+</head>
+<body>
+
+<div class="wrap" dir="rtl" lang="ar">
+  <main class="card">
+    <div class="seal" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#F3E9DC" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5-9 5-9-5z"/><path d="M7 11.5V16c0 1 2.2 2.5 5 2.5s5-1.5 5-2.5v-4.5"/><path d="M21 9v5"/></svg>
+    </div>
+
+    <section id="formView">
+      <p class="eyebrow">بدعوة خاصة · للمدراء والمديرات فقط</p>
+      <h1>قناة قادة المدارس</h1>
+      <p class="lead">قناة خاصة لعملائنا المميزين من مدراء ومديرات المدارس، فيها عروض وأسعار لا تُنشر للعامة.</p>
+
+      <ul class="perks">
+        <li>أسعار خاصة لطلبات المدارس</li>
+        <li>أولوية في تجهيز الطلبات والتوصيل</li>
+        <li>تواصل مباشر مع فريق المتجر</li>
+      </ul>
+
+      <form id="f" novalidate>
+        <div>
+          <label for="name">الاسم الكامل</label>
+          <input id="name" name="name" autocomplete="name" required>
+          <div class="error" id="name-err" hidden>اكتب اسمك عشان نخاطبك به في الدعوة.</div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="role">الصفة</label>
+            <select id="role" name="role" required>
+              <option value="">اختر</option>
+              <option>مدير مدرسة</option>
+              <option>مديرة مدرسة</option>
+              <option>وكيل مدرسة</option>
+              <option>وكيلة مدرسة</option>
+            </select>
+            <div class="error" id="role-err" hidden>اختر صفتك.</div>
+          </div>
+          <div>
+            <label for="stage">المرحلة <span class="opt">(اختياري)</span></label>
+            <select id="stage" name="stage">
+              <option value="">اختر</option>
+              <option>رياض أطفال</option>
+              <option>ابتدائي</option>
+              <option>متوسط</option>
+              <option>ابتدائي ومتوسط</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="school">اسم المدرسة</label>
+          <input id="school" name="school" required>
+          <div class="error" id="school-err" hidden>اكتب اسم المدرسة.</div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="city">المدينة</label>
+            <input id="city" name="city" autocomplete="address-level2" required>
+            <div class="error" id="city-err" hidden>اكتب المدينة.</div>
+          </div>
+          <div>
+            <label for="phone">جوال الواتساب</label>
+            <input id="phone" name="phone" type="tel" inputmode="tel" dir="ltr" autocomplete="tel" required>
+            <div class="hint">مثال: 05XXXXXXXX</div>
+            <div class="error" id="phone-err" hidden>الرقم لازم يبدأ بـ 05 ويكون 10 أرقام.</div>
+          </div>
+        </div>
+
+        <div class="consent">
+          <input type="checkbox" id="ok" required>
+          <label for="ok">أوافق على التواصل معي بخصوص عروض القناة فقط. بياناتي لا تُشارك مع أي جهة.</label>
+        </div>
+        <div class="error" id="ok-err" hidden>وافق على التواصل عشان نرسل لك الدعوة.</div>
+
+        <button class="primary" type="submit">أرسل طلب الانضمام</button>
+        <p class="note">نراجع الطلبات ونرسل رابط القناة على الواتساب للمقبولين.</p>
+      </form>
+    </section>
+
+    <section id="doneView" class="done" hidden>
+      <h2>خطوة أخيرة</h2>
+      <p>اضغط الزر عشان يوصلنا طلبك على الواتساب، وبنرسل لك الدعوة بعد المراجعة.</p>
+      <a id="wa" class="wa" href="#" target="_blank" rel="noopener">أرسل الطلب عبر واتساب</a>
+      <p class="note" id="noNum" hidden>رقم واتساب المتجر لم يُضبط بعد. انسخ الطلب وأرسله لنا.</p>
+      <pre class="msg" id="msg"></pre>
+      <button class="ghost" type="button" id="copy">نسخ الطلب</button>
+      <button class="ghost" type="button" id="back">تعديل البيانات</button>
+    </section>
+  </main>
+  <p class="foot">المقاعد محدودة · الانضمام بموافقة إدارة المتجر</p>
+</div>
+
+<script>
+// رقم واتساب المتجر بالصيغة الدولية بدون + (مثال: 9665XXXXXXXX)
+const STORE_WHATSAPP = "966545061120";
+
+const f = document.getElementById("f");
+const toLatin = s => s.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d));
+const checks = {
+  name: v => v.trim().length >= 3,
+  role: v => !!v,
+  school: v => v.trim().length >= 2,
+  city: v => v.trim().length >= 2,
+  phone: v => /^05\d{8}$/.test(toLatin(v).replace(/\D/g,"")),
+};
+function setErr(id, bad){
+  const el = document.getElementById(id), e = document.getElementById(id+"-err");
+  if (el.type !== "checkbox") el.setAttribute("aria-invalid", bad ? "true" : "false");
+  e.hidden = !bad;
+}
+Object.keys(checks).forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener("blur", () => { if (el.value) setErr(id, !checks[id](el.value)); });
+  el.addEventListener("input", () => { if (checks[id](el.value)) setErr(id, false); });
+  el.addEventListener("change", () => { if (checks[id](el.value)) setErr(id, false); });
+});
+document.getElementById("ok").addEventListener("change", e => { if (e.target.checked) setErr("ok", false); });
+
+f.addEventListener("submit", e => {
+  e.preventDefault();
+  let first = null;
+  for (const id of Object.keys(checks)){
+    const bad = !checks[id](document.getElementById(id).value);
+    setErr(id, bad); if (bad && !first) first = id;
+  }
+  const ok = document.getElementById("ok");
+  setErr("ok", !ok.checked); if (!ok.checked && !first) first = "ok";
+  if (first){ document.getElementById(first).focus(); return; }
+
+  const v = id => document.getElementById(id).value.trim();
+  const phone = toLatin(v("phone")).replace(/\D/g,"");
+  const text =
+`طلب انضمام لقناة قادة المدارس
+الاسم: ${v("name")}
+الصفة: ${v("role")}
+المدرسة: ${v("school")}${v("stage") ? " (" + v("stage") + ")" : ""}
+المدينة: ${v("city")}
+الجوال: ${phone}`;
+  document.getElementById("msg").textContent = text;
+  const wa = document.getElementById("wa");
+  if (STORE_WHATSAPP){
+    wa.href = "https://wa.me/" + STORE_WHATSAPP + "?text=" + encodeURIComponent(text);
+    wa.hidden = false; document.getElementById("noNum").hidden = true;
+  } else { wa.hidden = true; document.getElementById("noNum").hidden = false; }
+  document.getElementById("formView").hidden = true;
+  document.getElementById("doneView").hidden = false;
+  window.scrollTo({top:0});
+});
+
+document.getElementById("back").addEventListener("click", () => {
+  document.getElementById("doneView").hidden = true;
+  document.getElementById("formView").hidden = false;
+});
+document.getElementById("copy").addEventListener("click", async e => {
+  const t = document.getElementById("msg").textContent;
+  try { await navigator.clipboard.writeText(t); e.target.textContent = "تم النسخ"; }
+  catch { const r = document.createRange(); r.selectNodeContents(document.getElementById("msg"));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r); e.target.textContent = "حدّد النص وانسخه"; }
+});
+</script>
+
+</body>
+</html>
