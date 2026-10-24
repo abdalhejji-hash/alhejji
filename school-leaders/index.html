@@ -52,6 +52,13 @@ input:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px;border
 input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--err)}
 .hint{font-size:12px;color:var(--muted);margin-top:4px}
 .error{font-size:13px;color:var(--err);margin-top:4px}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend{font-weight:600;font-size:14px;margin-bottom:6px;padding:0}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg label{margin:0;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border:1px solid var(--line);border-radius:6px;background:var(--field);cursor:pointer;font-weight:500}
+.seg input{width:16px;height:16px;min-height:0;accent-color:var(--wine);margin:0}
+.seg label:has(input:checked){border-color:var(--wine);outline:1px solid var(--wine)}
+.seg label:has(input:focus-visible){outline:2px solid var(--gold);outline-offset:1px}
 .consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted)}
 .consent input{width:18px;height:18px;min-height:0;margin-top:5px;accent-color:var(--wine);flex:none}
 .consent label{font-weight:400;margin:0}
@@ -89,6 +96,15 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
       </ul>
 
       <form id="f" novalidate>
+        <fieldset id="customer">
+          <legend>هل أنت عميل لدى المتجر؟</legend>
+          <div class="seg">
+            <label><input type="radio" name="customer" value="نعم، عميل سابق"> نعم، اشتريت من قبل</label>
+            <label><input type="radio" name="customer" value="لا، عميل جديد"> لا، عميل جديد</label>
+          </div>
+          <div class="error" id="customer-err" hidden>اختر إذا كنت عميلاً لدى المتجر.</div>
+        </fieldset>
+
         <div>
           <label for="name">الاسم الكامل</label>
           <input id="name" name="name" autocomplete="name" required>
@@ -187,6 +203,7 @@ Object.keys(checks).forEach(id => {
   el.addEventListener("input", () => { if (checks[id](el.value)) setErr(id, false); });
   el.addEventListener("change", () => { if (checks[id](el.value)) setErr(id, false); });
 });
+f.querySelectorAll('input[name="customer"]').forEach(r => r.addEventListener("change", () => { document.getElementById("customer-err").hidden = true; }));
 document.getElementById("ok").addEventListener("change", e => { if (e.target.checked) setErr("ok", false); });
 
 f.addEventListener("submit", e => {
@@ -196,9 +213,12 @@ f.addEventListener("submit", e => {
     const bad = !checks[id](document.getElementById(id).value);
     setErr(id, bad); if (bad && !first) first = id;
   }
+  const cust = f.querySelector('input[name="customer"]:checked');
+  document.getElementById("customer-err").hidden = !!cust;
+  if (!cust && !first) first = "customer";
   const ok = document.getElementById("ok");
   setErr("ok", !ok.checked); if (!ok.checked && !first) first = "ok";
-  if (first){ document.getElementById(first).focus(); return; }
+  if (first){ (first === "customer" ? f.querySelector('input[name="customer"]') : document.getElementById(first)).focus(); return; }
 
   const v = id => document.getElementById(id).value.trim();
   const phone = toLatin(v("phone")).replace(/\D/g,"");
@@ -206,6 +226,7 @@ f.addEventListener("submit", e => {
 `طلب انضمام لقناة قادة المدارس
 الاسم: ${v("name")}
 الصفة: ${v("role")}
+عميل لدى المتجر: ${cust.value}
 المدرسة: ${v("school")}${v("stage") ? " (" + v("stage") + ")" : ""}
 المدينة: ${v("city")}
 الجوال: ${phone}`;
