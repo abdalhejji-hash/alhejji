@@ -775,6 +775,7 @@ const compact = s => String(s).normalize('NFKC').replace(/[ً-ْٰـ]/g, '').rep
   .replace(/(\d)\s+(?=\d)/g, '$1~').replace(/[\s«»"'(),،؛:.](?![\d])/g, '').replace(/\s+/g, '');
 const PCT_C = /(?<![\d.])(\d{1,3}(?:\.\d{1,2})?)\|?%|%\|?(\d{1,3}(?:\.\d{1,2})?)(?![\d.])/g;
 function pctsC(s, reversed){ const r = []; let m; PCT_C.lastIndex = 0; while((m = PCT_C.exec(s))){ let n = m[1] ?? m[2]; if(reversed) n = n.split('').reverse().join(''); const v = +n; if(v >= 0 && v <= 100 && !isNaN(v)) r.push({v, at: m.index}); } return r; }
+const lab0 = w => compact(w);
 function parseCore(lines, reversed){
   const L = lines.map(l => compact(reversed ? l.split('').reverse().join('') : l));
   const starts = []; let acc = 0; L.forEach(l => { starts.push(acc); acc += l.length; });
@@ -804,7 +805,8 @@ function parseCore(lines, reversed){
   anchors.sort((a,b) => a.line - b.line);
   const vals = {};
   const win = (a, k) => { const end = k + 1 < anchors.length ? anchors[k+1].line : Math.min(L.length, a.line + 6); return L.slice(a.line, Math.max(end, a.line + 1)).join('|'); };
-  anchors.forEach((a, k) => { const ps = pctsC(win(a, k), reversed); if(ps.length) vals[a.c] = ps[0].v; });
+  const usedLine = {};
+  anchors.forEach((a, k) => { const w = win(a, k), ps = pctsC(w, reversed); if(ps.length){ vals[a.c] = ps[0].v; usedLine[a.c] = a.line + (w.slice(0, ps[0].at).match(/\|/g) || []).length; } });
   // fallback: reports that print the percentage without a % sign
   if(Object.keys(vals).length < anchors.length * 0.5){
     anchors.forEach((a, k) => {
@@ -814,6 +816,35 @@ function parseCore(lines, reversed){
       const ns = [...w.matchAll(/(?<![\d.])(\d{1,3}(?:\.\d{1,2})?)(?![\d.])/g)].map(m => +m[1]).filter(v => v >= 0 && v <= 100);
       if(ns.length) vals[a.c] = ns[ns.length - 1];
     });
+  }
+  // sequence fill: indicators whose text was not recognised take the unused percentages
+  // that sit, in document order, between their recognised neighbours
+  {
+    const skip = l => [lab0('الأداء العام'), lab0('معيار'), ...[1,2,3,4].map(d => lab0(DOMAINS[d].n)), lab0('القيادة المدرسية')].some(x => l.includes(x));
+    const P = []; L.forEach((l, j) => { if(skip(l) && !anchors.some(a => a.line === j)) return; pctsC(l, reversed).forEach(p => P.push({j, at: p.at, v: p.v})); });
+    const usedSet = new Set(Object.entries(usedLine).map(([c, j]) => j));
+    const free = P.filter(p => !usedSet.has(p.j));
+    const ORD = IND.map(i => i.c);
+    const found = ORD.filter(c => vals[c] != null && usedLine[c] != null);
+    if(found.length < 3){
+      // nothing recognised: a table of exactly as many percentages as indicators is read in order
+      for(const set of [IND.filter(i => !i.p && !i.sec), IND.filter(i => !i.p), IND.filter(i => !i.sec), IND]){
+        if(P.length === set.length){ set.forEach((i, k) => { vals[i.c] = P[k].v; }); break; }
+      }
+    } else {
+      let k = 0;
+      while(k < ORD.length){
+        if(vals[ORD[k]] != null){ k++; continue; }
+        let e = k; while(e < ORD.length && vals[ORD[e]] == null) e++;
+        const lo = k > 0 && usedLine[ORD[k-1]] != null ? usedLine[ORD[k-1]] : -1;
+        const hi = e < ORD.length && usedLine[ORD[e]] != null ? usedLine[ORD[e]] : (k > 0 ? Infinity : -2);
+        const cand = free.filter(p => p.j > lo && p.j < hi);
+        const gapAll = ORD.slice(k, e), byC = c => IND.find(i => i.c === c);
+        const gap = [gapAll, gapAll.filter(c => !byC(c).p), gapAll.filter(c => !byC(c).sec), gapAll.filter(c => !byC(c).p && !byC(c).sec)].find(g => g.length && g.length === cand.length);
+        if(hi !== -2 && gap) gap.forEach((c, m) => { vals[c] = cand[m].v; usedLine[c] = cand[m].j; });
+        k = e;
+      }
+    }
   }
   const dom = {}; let overall = null, school = '', minNo = '';
   const anchorLines = new Set(anchors.map(a => a.line));
