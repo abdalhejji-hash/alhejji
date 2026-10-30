@@ -78,34 +78,59 @@ input.pct.b4{background:#FBE5E3;border-color:var(--l4);color:#8E2D25;font-weight
 .team-row{display:grid;grid-template-columns:1fr 1fr 34px;gap:8px;margin-bottom:6px}
 @media (max-width:700px){.bar{grid-template-columns:110px 1fr 54px}.blk .act{grid-template-columns:24px 1fr}.blk .act select,.blk .act input{grid-column:2}}
 @media print{nav.tabs,header.app,.topbar,.noprint{display:none!important}section.tab{display:none!important}section.tab.print{display:block!important}body{background:#fff}.card,.blk{break-inside:avoid}}
-.gate{position:fixed;inset:0;background:#EAEFF6;display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
-body.locked .gate{display:flex}body.locked header.app,body.locked nav.tabs,body.locked main,body.locked .topbar{display:none}
-.gate .box{background:#fff;border-radius:26px;padding:42px 38px 30px;max-width:520px;width:100%;box-shadow:0 10px 30px rgba(20,40,80,.08)}
-.gate .gh{display:flex;align-items:center;gap:14px;margin-bottom:34px}
-.gate .gicon{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#2F6FD6,#1FA463);display:flex;align-items:center;justify-content:center;flex:none}
-.gate .gname{font-size:25px;font-weight:800;color:#16213A;line-height:1.2}.gate .gsub{font-size:15px;color:#8A93A6;font-weight:700}
-.gate h2{font-size:22px;color:#16213A;margin:0 0 10px}.gate .gtxt{color:#2E3A4F;margin:0 0 26px;font-size:17px}
-.gate label{display:block;font-size:16px;color:#2E3A4F;margin-bottom:8px}
-.gate input{width:100%;font-size:19px;padding:14px 16px;border:1px solid #E1E5EE;background:#F5F7FA;border-radius:14px;margin-bottom:18px;text-align:right}
-.gate input:focus{outline:2px solid #3B6FC4;background:#fff}
-.gate .gbtn{width:100%;font:inherit;font-size:19px;font-weight:700;background:#16213A;color:#fff;border:0;border-radius:14px;padding:15px;cursor:pointer}
-.gate .gbtn:focus-visible{outline:3px solid #3B6FC4;outline-offset:2px}
-.gate #gateMsg{color:#C0453A;font-weight:700;min-height:1.5em;margin:12px 0 4px;text-align:center}
-.gate .gdots{display:flex;justify-content:center;gap:8px}.gate .gdots span{width:32px;height:7px;border-radius:4px}
+.gate{position:fixed;inset:0;display:none;z-index:50;background:#F2F7F8;overflow:auto}
+body.locked .gate{display:block}body.locked header.app,body.locked nav.tabs,body.locked main,body.locked .topbar{display:none}
+.gwrap{min-height:100%;display:grid;grid-template-columns:minmax(300px,44%) 1fr}
+.gside{background:linear-gradient(160deg,#13435A 0%,#0F5868 55%,#148E9D 100%);color:#fff;padding:64px 56px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.gside::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.09) 1.6px,transparent 1.6px);background-size:22px 22px;mask-image:linear-gradient(to top,#000,transparent 70%);-webkit-mask-image:linear-gradient(to top,#000,transparent 70%)}
+.gside>*{position:relative;z-index:1}
+.gmark{display:flex;align-items:flex-end;gap:6px;height:46px;margin-bottom:22px}
+.gmark span{width:12px;border-radius:3px;background:#BBAF87}.gmark span:nth-child(1){height:18px;opacity:.6}.gmark span:nth-child(2){height:28px;opacity:.75}.gmark span:nth-child(3){height:38px;opacity:.9}.gmark span:nth-child(4){height:46px}
+.gside h1{font-size:54px;margin:0;line-height:1.1}
+.glead{font-size:21px;line-height:1.7;margin:14px 0 30px;color:#D9EEF1;max-width:28ch}
+.gfeat{list-style:none;padding:0;margin:0;display:grid;gap:14px}
+.gfeat li{display:flex;gap:12px;align-items:center;font-size:18px}
+.gfeat b{width:32px;height:32px;border-radius:50%;border:1.5px solid #BBAF87;color:#BBAF87;display:flex;align-items:center;justify-content:center;flex:none;font-size:16px}
+.gform{align-self:center;justify-self:center;width:100%;max-width:400px;padding:48px 28px}
+.gkick{color:#A99C6E;font-weight:800;letter-spacing:.5px;margin:0 0 6px;font-size:16px}
+.gform h2{font-size:36px;color:#13435A;margin:0 0 8px}
+.gtxt{color:#4A6772;margin:0 0 30px;font-size:18px}
+.gform label{display:block;font-weight:700;color:#13435A;margin-bottom:6px;font-size:16px}
+.gfield{border-bottom:2px solid #9DC9CF;margin-bottom:26px;transition:border-color .2s}
+.gfield:focus-within{border-color:#148E9D}
+.gfield input{width:100%;border:0;background:transparent;font-size:28px;font-weight:700;color:#13435A;padding:6px 2px;letter-spacing:3px;direction:ltr;text-align:right;outline:none}
+.gbtn{font:inherit;font-size:19px;font-weight:700;background:#148E9D;color:#fff;border:0;border-radius:999px;padding:13px 34px;cursor:pointer;display:inline-flex;gap:10px;align-items:center;box-shadow:0 6px 16px rgba(20,142,157,.28)}
+.gbtn:hover{background:#0F7A87}.gbtn:focus-visible{outline:3px solid #A99C6E;outline-offset:3px}
+#gateMsg{color:#C0453A;font-weight:700;min-height:1.5em;margin:14px 0 0}
+.gnote{color:#7A9199;font-size:15px;margin:22px 0 0;border-top:1px solid #DCEBEE;padding-top:14px}
+@media (max-width:760px){.gwrap{grid-template-columns:1fr}.gside{padding:36px 26px}.gside h1{font-size:40px}.glead{font-size:18px;margin-bottom:20px}.gfeat li{font-size:16px}.gform{padding:32px 24px}}
 </style>
 </head>
 <body>
-<div class="gate" role="dialog" aria-labelledby="gateT"><form class="box" id="gateF">
-  <div class="gh"><div class="gicon" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30"><rect x="5" y="5" width="3.2" height="14" rx="1.6" fill="#fff"/><rect x="10.4" y="9" width="3.2" height="10" rx="1.6" fill="#fff"/><rect x="15.8" y="13" width="3.2" height="6" rx="1.6" fill="#fff"/></svg></div>
-    <div><div class="gname" id="gateT">تحسين</div><div class="gsub">تحليل نتائج التقويم المدرسي وبناء خطة التحسين</div></div></div>
-  <h2>تسجيل الدخول</h2>
-  <p class="gtxt">أدخل رقم الطلب الذي وصلك بعد شراء الأداة من المتجر.</p>
-  <label for="gateIn">رقم الطلب</label>
-  <input id="gateIn" inputmode="numeric" autocomplete="off" placeholder="مثال: 12345" required>
-  <button class="gbtn">دخول</button>
-  <p id="gateMsg" role="status"></p>
-  <div class="gdots" aria-hidden="true"><span style="background:#1FA463"></span><span style="background:#3B6FC4"></span><span style="background:#E8913A"></span><span style="background:#C8102E"></span></div>
-</form></div>
+<div class="gate" role="dialog" aria-labelledby="gateT">
+ <div class="gwrap">
+  <aside class="gside">
+    <div class="gmark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <h1 id="gateT">تحسين</h1>
+    <p class="glead">من نتائج التقويم المدرسي إلى خطة تحسين جاهزة بهوية مدرستك.</p>
+    <ul class="gfeat">
+      <li><b>١</b>ارفع تقرير الأداء فتُقرأ النسب تلقائيًا</li>
+      <li><b>٢</b>حلّل المجالات والمعايير والأولويات بالألوان</li>
+      <li><b>٣</b>صدّر خطة التحسين في ملف Word</li>
+    </ul>
+  </aside>
+  <form class="gform" id="gateF">
+    <p class="gkick">بوابة المدارس</p>
+    <h2>أهلًا بك</h2>
+    <p class="gtxt">للدخول اكتب رقم الطلب المرسل إليك عند الشراء.</p>
+    <label for="gateIn">رقم الطلب</label>
+    <div class="gfield"><input id="gateIn" inputmode="numeric" autocomplete="off" required aria-describedby="gateMsg"></div>
+    <button class="gbtn">متابعة <span aria-hidden="true">←</span></button>
+    <p id="gateMsg" role="status"></p>
+    <p class="gnote">يُحفظ دخولك على هذا الجهاز، وتبقى بيانات مدرستك فيه وحده.</p>
+  </form>
+ </div>
+</div>
 <div class="topbar"></div>
 <header class="app">
   <img id="hdrLogo" alt="شعار">
