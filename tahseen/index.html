@@ -1107,13 +1107,17 @@ $('#expWord').onclick = async () => {
   document.body.classList.add('locked');
   const AK = 'tahseen-access';
   const sha = async s => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map(x => x.toString(16).padStart(2,'0')).join('');
-  const norm = v => normT(v).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const norm = v => { const s = normT(v || '').toUpperCase(); const m = s.match(/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/); return (m ? m[0] : s).replace(/[^A-Z0-9]/g, ''); };
   let list = null;
   try{ list = await (await fetch('orders.json?v=' + Date.now(), {cache:'no-store'})).json(); }
   catch(e){ $('#gateMsg').textContent = 'تعذّر التحقق الآن. تأكد من الاتصال ثم أعد تحميل الصفحة.'; return; }
   const ok = async v => { const n = norm(v || ''); return n.length >= 4 && list.hashes.includes(await sha(list.salt + n)); };
   const open_ = () => { document.body.classList.remove('locked'); };
   let saved = null; try{ saved = localStorage.getItem(AK); }catch(e){}
+  const hk = (location.hash.match(/k=([A-Za-z0-9-]+)/) || [])[1];
+  if(hk){ try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+    if(await ok(hk)){ try{ localStorage.setItem(AK, norm(hk)); }catch(e){} return open_(); }
+    $('#gateIn').value = hk; $('#gateMsg').textContent = 'الكود في الرابط غير صحيح. تأكد منه أو تواصل معنا.'; }
   if(saved && await ok(saved)) return open_();
   $('#gateF').onsubmit = async e => {
     e.preventDefault();
