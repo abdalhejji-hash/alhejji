@@ -98,7 +98,7 @@ body.locked .gate{display:block}body.locked header.app,body.locked nav.tabs,body
 .gform label{display:block;font-weight:700;color:#13435A;margin-bottom:6px;font-size:16px}
 .gfield{border-bottom:2px solid #9DC9CF;margin-bottom:26px;transition:border-color .2s}
 .gfield:focus-within{border-color:#148E9D}
-.gfield input{width:100%;border:0;background:transparent;font-size:28px;font-weight:700;color:#13435A;padding:6px 2px;letter-spacing:3px;direction:ltr;text-align:right;outline:none}
+.gfield input{width:100%;border:0;background:transparent;font-size:24px;text-transform:uppercase;font-weight:700;color:#13435A;padding:6px 2px;letter-spacing:3px;direction:ltr;text-align:right;outline:none}
 .gbtn{font:inherit;font-size:19px;font-weight:700;background:#148E9D;color:#fff;border:0;border-radius:999px;padding:13px 34px;cursor:pointer;display:inline-flex;gap:10px;align-items:center;box-shadow:0 6px 16px rgba(20,142,157,.28)}
 .gbtn:hover{background:#0F7A87}.gbtn:focus-visible{outline:3px solid #A99C6E;outline-offset:3px}
 #gateMsg{color:#C0453A;font-weight:700;min-height:1.5em;margin:14px 0 0}
@@ -122,9 +122,9 @@ body.locked .gate{display:block}body.locked header.app,body.locked nav.tabs,body
   <form class="gform" id="gateF">
     <p class="gkick">بوابة المدارس</p>
     <h2>أهلًا بك</h2>
-    <p class="gtxt">للدخول اكتب رقم الطلب المرسل إليك عند الشراء.</p>
-    <label for="gateIn">رقم الطلب</label>
-    <div class="gfield"><input id="gateIn" inputmode="numeric" autocomplete="off" required aria-describedby="gateMsg"></div>
+    <p class="gtxt">للدخول اكتب كود التفعيل الذي وصلك من المتجر بعد الشراء.</p>
+    <label for="gateIn">كود التفعيل</label>
+    <div class="gfield"><input id="gateIn" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX" required aria-describedby="gateMsg"></div>
     <button class="gbtn">متابعة <span aria-hidden="true">←</span></button>
     <p id="gateMsg" role="status"></p>
     <p class="gnote">يُحفظ دخولك على هذا الجهاز، وتبقى بيانات مدرستك فيه وحده.</p>
@@ -973,6 +973,7 @@ function anchorImg(rid, id, name, y, cx, cy){
 function inlineImg(rid, id, cx, cy){
   return `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${id}" name="HeaderLogo"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="${id}" name="logo"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
 }
+function licTag(){ let c = null; try{ c = localStorage.getItem('tahseen-access'); }catch(e){} return c ? '  ·  ترخيص ' + c.slice(-4) : ''; }
 function imgSize(dataUrl){ return new Promise(res => { const im = new Image(); im.onload = () => res([im.naturalWidth, im.naturalHeight]); im.onerror = () => res([481,310]); im.src = dataUrl; }); }
 
 async function buildDocx(){
@@ -986,7 +987,7 @@ async function buildDocx(){
     <w:tc><w:tcPr><w:tcW w:w="40" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="168C9A"/><w:tcMar><w:left w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tcMar></w:tcPr><w:p><w:pPr><w:spacing w:after="0" w:line="20" w:lineRule="exact"/></w:pPr></w:p></w:tc>
     <w:tc><w:tcPr><w:tcW w:w="5200" w:type="dxa"/><w:tcMar><w:left w:w="200" w:type="dxa"/><w:right w:w="200" w:type="dxa"/></w:tcMar><w:vAlign w:val="center"/></w:tcPr>${hdrLine(S.line0 || 'المملكة العربية السعودية')}${hdrLine(S.line1 || 'وزارة التعليم')}${hdrLine(adminLine())}${hdrLine('مدرسة ' + school)}</w:tc>
     </w:tr></w:tbl><w:p><w:pPr><w:spacing w:after="0" w:line="120" w:lineRule="exact"/></w:pPr>${anchorImg('rId2', 9101, 'TopBar', 0, 7560310, 300000)}</w:p></w:hdr>`;
-  const footer = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr ${NS}><w:p><w:pPr><w:bidi/><w:spacing w:after="0"/><w:jc w:val="center"/></w:pPr>${anchorImg('rId1', 9102, 'BottomBar', 10292130, 7560310, 400000)}${run('خطة التحسين المدرسي – مدرسة ' + school, {b:true, color:C.white, sz:26})}</w:p></w:ftr>`;
+  const footer = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr ${NS}><w:p><w:pPr><w:bidi/><w:spacing w:after="0"/><w:jc w:val="center"/></w:pPr>${anchorImg('rId1', 9102, 'BottomBar', 10292130, 7560310, 400000)}${run('خطة التحسين المدرسي – مدرسة ' + school + licTag(), {b:true, color:C.white, sz:26})}</w:p></w:ftr>`;
 
   let body = '';
   // cover
@@ -1106,7 +1107,7 @@ $('#expWord').onclick = async () => {
   document.body.classList.add('locked');
   const AK = 'tahseen-access';
   const sha = async s => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map(x => x.toString(16).padStart(2,'0')).join('');
-  const norm = v => normT(v).replace(/\D/g, '');
+  const norm = v => normT(v).toUpperCase().replace(/[^A-Z0-9]/g, '');
   let list = null;
   try{ list = await (await fetch('orders.json?v=' + Date.now(), {cache:'no-store'})).json(); }
   catch(e){ $('#gateMsg').textContent = 'تعذّر التحقق الآن. تأكد من الاتصال ثم أعد تحميل الصفحة.'; return; }
@@ -1118,7 +1119,7 @@ $('#expWord').onclick = async () => {
     e.preventDefault();
     const v = $('#gateIn').value;
     if(await ok(v)){ try{ localStorage.setItem(AK, norm(v)); }catch(e){} open_(); }
-    else { $('#gateMsg').textContent = 'رقم الطلب غير صحيح أو غير مفعّل. تواصل مع المتجر.'; }
+    else { $('#gateMsg').textContent = 'الكود غير صحيح. تأكد منه كما وصلك من المتجر، أو تواصل معنا.'; }
   };
   $('#gateIn').focus();
   const out = document.createElement('button'); out.className = 'btn ghost'; out.textContent = 'تسجيل الخروج'; out.style.marginInlineStart = 'auto';
