@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<title>تحسين — تفعيل أرقام الطلبات</title>
+<style>body{font-family:"Sakkal Majalla",Tahoma,sans-serif;background:#F5FAFB;color:#17495A;max-width:760px;margin:30px auto;padding:0 16px;font-size:18px}
+h1{color:#13435A}textarea{width:100%;font:16px/1.6 monospace;direction:ltr;border:1px solid #b8d5da;border-radius:8px;padding:8px}
+button{font:inherit;font-weight:700;background:#148E9D;color:#fff;border:0;border-radius:8px;padding:9px 18px;cursor:pointer;margin:8px 0}
+.card{background:#fff;border:1px solid #C9E3E7;border-radius:12px;padding:16px 18px;margin-bottom:16px}ol{padding-right:20px}</style></head>
+<body><h1>تفعيل أرقام الطلبات</h1>
+<div class="card"><ol>
+<li>اكتب أرقام الطلبات الجديدة من متجر سلة، رقمًا في كل سطر.</li>
+<li>اضغط «إنشاء الملف»، ثم «نسخ».</li>
+<li>افتح ملف <b>tahseen/orders.json</b> في المستودع على GitHub، واضغط القلم (Edit)، واحذف محتواه والصق الجديد، ثم «Commit changes».</li>
+</ol><p>يُحفظ في الملف بصمة الرقم فقط وليس الرقم نفسه. الأرقام المفعّلة سابقًا تبقى كما هي.</p></div>
+<div class="card"><label for="nums"><b>أرقام الطلبات الجديدة</b></label><textarea id="nums" rows="6"></textarea>
+<button id="go">إنشاء الملف</button>
+<textarea id="out" rows="10" readonly aria-label="محتوى orders.json الجديد"></textarea>
+<button id="copy">نسخ</button> <span id="msg" role="status"></span></div>
+<script>
+const sha = async s => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map(x => x.toString(16).padStart(2,'0')).join('');
+const digits = v => v.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g, '');
+document.getElementById('go').onclick = async () => {
+  const msg = document.getElementById('msg');
+  let cur; try{ cur = await (await fetch('orders.json?v=' + Date.now(), {cache:'no-store'})).json(); }catch(e){ msg.textContent = 'تعذّر قراءة orders.json'; return; }
+  const nums = document.getElementById('nums').value.split(/\s+/).map(digits).filter(n => n.length >= 4);
+  let added = 0;
+  for(const n of nums){ const h = await sha(cur.salt + n); if(!cur.hashes.includes(h)){ cur.hashes.push(h); added++; } }
+  document.getElementById('out').value = JSON.stringify(cur, null, 1);
+  msg.textContent = `أُضيف ${added} رقمًا. الإجمالي ${cur.hashes.length}.`;
+};
+document.getElementById('copy').onclick = async () => { const o = document.getElementById('out'); o.select(); try{ await navigator.clipboard.writeText(o.value); document.getElementById('msg').textContent = 'تم النسخ.'; }catch(e){ document.execCommand('copy'); } };
+</script></body></html>
