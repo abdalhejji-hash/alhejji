@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>تحدّي المدرستين</title>
+<title>أبطال نُتقن</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@500;600;700&display=swap">
 <style>
@@ -87,7 +87,7 @@ let CFG = store.get('cfg',{a:'مدرسة حكيم بن حزام الابتدائ
 let G = null, TIMER = null, LEFT = 0;
 let AC=null; function beep(f,d,v=.08){ try{ AC ||= new (window.AudioContext||window.webkitAudioContext)(); const o=AC.createOscillator(),g=AC.createGain(); o.frequency.value=f; g.gain.setValueAtTime(v,AC.currentTime); g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d); o.connect(g).connect(AC.destination); o.start(); o.stop(AC.currentTime+d); }catch(e){} }
 const okS=()=>{ beep(784,.15); setTimeout(()=>beep(1047,.35),130); }, badS=()=>{ beep(330,.2); setTimeout(()=>beep(247,.35),160); };
-const HEAD = `<header class="head"><h1>تحدّي <span>المدرستين</span></h1><div class="sch">إدارة التعليم بمحافظة الأحساء • مبادرة نُتقن – النشاط الطلابي</div><div class="sch">مدرسة حكيم بن حزام الابتدائية وملحقتها الطريبيل المتوسطة</div></header>`;
+const HEAD = `<header class="head"><h1>أبطال <span>نُتقن</span></h1><div class="sch">إدارة التعليم بمحافظة الأحساء • مبادرة نُتقن – النشاط الطلابي</div><div class="sch">مدرسة حكيم بن حزام الابتدائية وملحقتها الطريبيل المتوسطة</div></header>`;
 const name = t => t==='a' ? (G?G.a:CFG.a) : (G?G.b:CFG.b);
 const other = t => t==='a'?'b':'a';
 
