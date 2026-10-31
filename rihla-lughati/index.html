@@ -79,7 +79,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .lv .sc{font-size:13px;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
 /* quiz */
 .qtop{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.qtop .tag{background:var(--c);color:var(--surface);border-radius:999px;padding:4px 14px;font-weight:700;font-family:var(--display)}
+.qtop .tag{min-width:0;background:var(--c);color:var(--surface);border-radius:999px;padding:4px 14px;font-weight:700;font-family:var(--display)}
+.clock{font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted);background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:2px 12px;white-space:nowrap;flex:0 0 auto}
 .qtop .x{background:none;border:0;color:var(--muted);font-weight:700;font-size:16px}
 .dots{display:flex;gap:6px}.dots i{flex:1;height:8px;border-radius:99px;background:var(--line)}
 .dots i.on{background:var(--c)}.dots i.okd{background:var(--ok)}.dots i.badd{background:var(--bad)}
@@ -173,6 +174,11 @@ const nextIdx = () => { const i = ORDER.findIndex(k=>jb()[k]==null); return i<0 
 const totalScore = id => ORDER.reduce((a,k)=>a+((S.best[id]||{})[k]||0),0);
 const starsFor = (s,n) => s>=n?3:s/n>=.5?2:s>0?1:0;
 const starHTML = n => '★'.repeat(n)+'<span class="off">'+'★'.repeat(3-n)+'</span>';
+const MMSS = t => { t=Math.round(t||0); return '\u2066'+AR(Math.floor(t/60))+':'+AR(String(t%60).padStart(2,'0'))+'\u2069'; };
+const timeWords = t => { t=Math.round(t||0); const m=Math.floor(t/60), x=t%60; return (m?AR(m)+' دقيقة':'')+(m&&x?' و':'')+(x||!m?AR(x)+' ثانية':''); };
+const jt = () => (S.time ||= {}, S.time[J] ||= {});
+const totalTime = id => ORDER.reduce((a,k)=>a+(((S.time||{})[id]||{})[k]||0),0);
+let TICK = null;
 const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
 const SCHOOL = `<div class="school">إدارة التعليم بمحافظة الأحساء<br>مدرسة حكيم بن حزام الابتدائية وملحقتها الطريبيل المتوسطة</div><div class="badge">مبادرة نُتقن – النشاط الطلابي</div>`;
 const jTitle = id => 'رحلة '+subOf(id.split('-')[1]).n;
@@ -197,7 +203,7 @@ function viewStart(){
     <h3 style="font-size:20px">كيف تلعب؟</h3>
     <div>اختر صفّك، ثم اختر المادة: لغتي أو الرياضيات أو العلوم أو الدراسات الإسلامية.</div>
     <div>في كل مادة ٣ فقرات، ولكل فقرة ٣ مستويات. بعد كل مستوى يُفتح المستوى الذي بعده.</div>
-    <div>في كل مستوى ٣ أو ٤ أسئلة، وفي نهاية كل مادة تحصل على درجتك وشهادة شكر.</div>
+    <div>في كل مستوى ٣ أو ٤ أسئلة، ويظهر لك الوقت أثناء الحل. في نهاية كل مادة تحصل على درجتك ووقتك وشهادة شكر.</div>
   </div>`;
   const fillCls = () => { const cur = S.grade===g ? S.cls : ''; $('#cl').innerHTML = classes(g).map(v=>`<option value="${v}" ${cur===v?'selected':''}>${v||(g?'اختر فصلك':'اختر صفّك أوّلًا')}</option>`).join(''); };
   fillCls();
@@ -234,7 +240,7 @@ function viewSubjects(){
 function viewMap(){
   const ni = nextIdx(), B = BANK[J], sj = subOf(J.split('-')[1]);
   app.innerHTML = `
-  <div class="who"><div><div class="school" style="text-align:right">${jTitle(J)} • الصف ${gName(S.grade)}</div><b>${esc(S.name.split(/\s+/)[0])}، أهلًا بك!</b></div><span class="total">درجتك: ${AR(totalScore(J))} / ${AR(totalN(J))}</span></div>
+  <div class="who"><div><div class="school" style="text-align:right">${jTitle(J)} • الصف ${gName(S.grade)}</div><b>${esc(S.name.split(/\s+/)[0])}، أهلًا بك!</b></div><span class="total">درجتك: ${AR(totalScore(J))} / ${AR(totalN(J))}${totalTime(J)?' • ⏱ '+MMSS(totalTime(J)):''}</span></div>
   ${B.secs.map((s,si)=>`
   <section class="sec" style="--c:${SC[si].c};--cs:${SC[si].cs}">
     <header><div class="ic">${AR(si+1)}</div><div><h2>${esc(s.name)}</h2><p>${esc(s.desc)}</p></div></header>
@@ -258,14 +264,14 @@ let Q = null;
 function startLevel(k){
   const [si,li] = k.split('-').map(Number);
   const pool = BANK[J].q.filter(d=>d.sec===si && d.lvl===li);
-  Q = {k, si, li, items: shuffle(pool).slice(0,lvN(J,si,li)).map(d=>({...d, order:shuffle(d.opts.map((_,i)=>i))})), i:0, score:0, marks:[]};
+  Q = {k, si, li, items: shuffle(pool).slice(0,lvN(J,si,li)).map(d=>({...d, order:shuffle(d.opts.map((_,i)=>i))})), i:0, score:0, marks:[], t0:Date.now()};
   viewQ();
 }
 function viewQ(){
   const c = SC[Q.si], it = Q.items[Q.i], L = ['أ','ب','ج','د'];
   app.innerHTML = `
   <div style="--c:${c.c};--cs:${c.cs};display:flex;flex-direction:column;gap:14px" class="pop">
-    <div class="qtop"><span class="tag">${esc(BANK[J].secs[Q.si].name)} • ${LV[Q.li]}</span><button class="x" id="ex">خروج ✕</button></div>
+    <div class="qtop"><span class="tag">${esc(BANK[J].secs[Q.si].name)} • ${LV[Q.li]}</span><span class="clock" id="clk" aria-label="الوقت">⏱ ${MMSS((Date.now()-Q.t0)/1000)}</span><button class="x" id="ex">خروج ✕</button></div>
     <div class="dots">${Q.items.map((_,j)=>`<i class="${Q.marks[j]===true?'okd':Q.marks[j]===false?'badd':(j===Q.i?'on':'')}"></i>`).join('')}</div>
     <div class="school" style="text-align:right">السؤال ${AR(Q.i+1)} من ${AR(Q.items.length)}</div>
     ${it.ctx&&it.ctx.length?`<div class="passage" id="ps"><div class="ph"><span>اقرأ النصّ</span><button id="tg">إخفاء النصّ</button></div>${it.ctx.map(p=>`<p>${esc(p)}</p>`).join('')}</div>`:''}
@@ -274,7 +280,8 @@ function viewQ(){
     <div class="opts ${it.oimg?'pics':''}">${it.order.map((oi,j)=>`<button class="opt" data-oi="${oi}" aria-label="${L[j]}: ${esc(it.opts[oi])}"><span class="l">${L[j]}</span>${it.oimg?`<img src="${it.oimg[oi]}" alt="${esc(it.opts[oi])}">`:`<span>${esc(it.opts[oi])}</span>`}</button>`).join('')}</div>
     <div id="fbx"></div>
   </div>`;
-  $('#ex').onclick = viewMap;
+  $('#ex').onclick = () => { clearInterval(TICK); viewMap(); };
+  clearInterval(TICK); TICK = setInterval(()=>{ const c=$('#clk'); if(c) c.textContent='⏱ '+MMSS((Date.now()-Q.t0)/1000); else clearInterval(TICK); },1000);
   if($('#tg')) $('#tg').onclick = () => { const p=$('#ps'); p.classList.toggle('closed'); $('#tg').textContent = p.classList.contains('closed')?'إظهار النصّ':'إخفاء النصّ'; };
   app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.oi));
   window.scrollTo({top:0});
@@ -292,7 +299,8 @@ function answer(oi){
   $('#nx').onclick = () => { if(last) finishLevel(); else { Q.i++; viewQ(); } };
 }
 function finishLevel(){
-  const n = Q.items.length, prev = jb()[Q.k]; jb()[Q.k] = Math.max(prev??0, Q.score); save();
+  clearInterval(TICK); const secs = Math.round((Date.now()-Q.t0)/1000);
+  const n = Q.items.length, prev = jb()[Q.k]; jb()[Q.k] = Math.max(prev??0, Q.score); jt()[Q.k] = secs; save();
   const c = SC[Q.si], st = starsFor(Q.score,n), allDone = nextIdx()>=ORDER.length;
   setTimeout(SND.level,250);
   const msg = st===3?'ممتاز! أتقنت هذا المستوى.':st===2?'أحسنت! أداء جميل.':st===1?'جيّد، ويمكنك أن تحاول مرّة أخرى لتحصل على نجوم أكثر.':'لا بأس، أعد المحاولة وستتحسّن.';
@@ -301,6 +309,7 @@ function finishLevel(){
     <span class="school">${esc(BANK[J].secs[Q.si].name)} • ${LV[Q.li]}</span>
     <div class="stars">${starHTML(st)}</div>
     <div class="big" style="color:${c.c}">${AR(Q.score)} / ${AR(n)}</div>
+    <div class="clock" style="font-size:18px">⏱ الوقت: ${MMSS(secs)}</div>
     <div style="font-weight:700;font-size:20px">${msg}</div>
     <div class="row"><button class="btn ghost" id="rt">أعد المستوى</button><button class="btn" id="go">${allDone?'اعرض شهادتي':'تابع الرحلة'}</button></div>
   </div>`;
@@ -333,10 +342,11 @@ async function drawCert(){
   T('الصفّ '+gName(S.grade)+' الابتدائي — فصل '+S.cls,620,'700 34px "IBM Plex Sans Arabic"','#5C7377');
   const line='لإتمامه «'+jTitle(J)+'» في تدريبات نافس ضمن مبادرة نُتقن، وحصوله على الدرجة';
   fitText(x,line,W-260,40,700); x.fillStyle='#173A40'; x.textAlign='center'; x.fillText(line,W/2,700);
-  T(AR(totalScore(J))+' من '+AR(totalN(J)),790,'800 72px "IBM Plex Sans Arabic"','#E8590C');
+  T(AR(totalScore(J))+' من '+AR(totalN(J)),772,'800 72px "IBM Plex Sans Arabic"','#E8590C');
+  T('في زمن قدره '+timeWords(totalTime(J)),818,'700 30px "IBM Plex Sans Arabic"','#5C7377');
   B.secs.forEach((s,i)=>{const xx=W/2+(1-i)*440; const n=Math.round(secScore(i)/secN(J,i)*3);
-    fitText(x,s.name,400,32,800); x.textAlign='center'; x.fillStyle=SC[i].hex; x.fillText(s.name,xx,850);
-    x.font='44px "IBM Plex Sans Arabic"'; x.fillStyle='#F5B300'; x.fillText('★'.repeat(n)+'☆'.repeat(3-n),xx,898);});
+    fitText(x,s.name,400,32,800); x.textAlign='center'; x.fillStyle=SC[i].hex; x.fillText(s.name,xx,866);
+    x.font='44px "IBM Plex Sans Arabic"'; x.fillStyle='#F5B300'; x.fillText('★'.repeat(n)+'☆'.repeat(3-n),xx,910);});
   T('متمنّين لك دوام التفوّق والنجاح',950,'700 34px "IBM Plex Sans Arabic"','#173A40');
   T('مدير المدرسة',995,'700 28px "IBM Plex Sans Arabic"','#5C7377','center',W-360);
   T('أ. عبدالله يوسف المهناء',1035,'800 30px "IBM Plex Sans Arabic"','#173A40','center',W-360);
@@ -348,7 +358,7 @@ async function viewFinal(){
   const B = BANK[J], sc = totalScore(J), TOTAL = totalN(J), pct = Math.round(sc/TOTAL*100);
   setTimeout(SND.final,300);
   const phoneIntl = S.phone ? '966'+S.phone.slice(1) : '';
-  const text = `السلام عليكم ورحمة الله،\nأتمّ الطالب ${S.name} (الصفّ ${gName(S.grade)} – فصل ${S.cls}) تدريبات «${jTitle(J)}» لاختبار نافس ضمن مبادرة نُتقن – النشاط الطلابي.\nالدرجة: ${AR(sc)} من ${AR(TOTAL)} (${AR(pct)}٪)\n${B.secs.map((s,i)=>`${s.name}: ${AR(secScore(i))} من ${AR(secN(J,i))}`).join('\n')}\nمدرسة حكيم بن حزام الابتدائية`;
+  const text = `السلام عليكم ورحمة الله،\nأتمّ الطالب ${S.name} (الصفّ ${gName(S.grade)} – فصل ${S.cls}) تدريبات «${jTitle(J)}» لاختبار نافس ضمن مبادرة نُتقن – النشاط الطلابي.\nالدرجة: ${AR(sc)} من ${AR(TOTAL)} (${AR(pct)}٪)\nالوقت المستغرق: ${timeWords(totalTime(J))}\n${B.secs.map((s,i)=>`${s.name}: ${AR(secScore(i))} من ${AR(secN(J,i))}`).join('\n')}\nمدرسة حكيم بن حزام الابتدائية`;
   const wa = 'https://wa.me/'+phoneIntl+'?text='+encodeURIComponent(text);
   const file = 'شهادة-'+jTitle(J).replace(/\s+/g,'-')+'.png';
   app.innerHTML = `
@@ -357,6 +367,7 @@ async function viewFinal(){
     <h2 style="font-size:30px">أحسنت يا ${esc(S.name.split(/\s+/)[0])}</h2>
     <div class="big" style="color:var(--s2)">${AR(sc)} / ${AR(TOTAL)}</div>
     <div style="font-weight:700">نسبتك ${AR(pct)}٪</div>
+    <div class="clock" style="font-size:18px">⏱ الوقت المستغرق: ${timeWords(totalTime(J))}</div>
   </div>
   <div class="card bars">${B.secs.map((s,i)=>{const v=secScore(i);return `<div class="bar" style="--c:${SC[i].c}"><span>${esc(s.name)}</span><span class="tr"><i style="width:${v/secN(J,i)*100}%"></i></span><span>${AR(v)}/${AR(secN(J,i))}</span></div>`;}).join('')}</div>
   <div class="card" style="display:flex;flex-direction:column;gap:10px">
@@ -376,7 +387,7 @@ async function viewFinal(){
   <button class="btn ghost wide" id="nw">أعد هذه المادّة من البداية</button>`;
   $('#mp').onclick = viewMap;
   $('#sb').onclick = viewSubjects;
-  $('#nw').onclick = () => { S.best[J]={}; save(); viewMap(); };
+  $('#nw').onclick = () => { S.best[J]={}; jt(); S.time[J]={}; save(); viewMap(); };
   $('#cp').onclick = async () => { try{ await navigator.clipboard.writeText(text); $('#cp').textContent='نُسخت الرسالة'; }catch(e){ const r=document.createRange(); r.selectNodeContents($('#mt')); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); $('#cp').textContent='حدّد النصّ وانسخه'; } };
   window.scrollTo({top:0});
   const canvas = await drawCert();
