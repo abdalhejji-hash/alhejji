@@ -7,13 +7,15 @@ const ADMIN_PIN = '';
 // الصق هذا الكود كاملًا في: الإضافات ← Apps Script، ثم انشره تطبيق ويب (التنفيذ بصفة: أنا، الوصول: أي شخص).
 // عند تغيير الكود لاحقًا: نشر ← إدارة عمليات النشر ← تعديل ← إصدار جديد، حتى يبقى الرابط نفسه.
 
+// رقم جدول النتائج (من رابطه بين /d/ و /edit)، ويُترك فارغًا إذا كان الكود داخل الجدول نفسه.
+const SHEET_ID = '';
 const SHEET_NAME = 'المحاولات';
 const HEADERS = ['الوقت', 'المرحلة', 'الصف', 'المادة', 'الجولة', 'الاسم', 'الفصل', 'الدرجة', 'الثواني', 'الجهاز'];
 const SUBJECTS = ['ar', 'ma', 'sc', 'is', 'en', 'sd', 'rd'];
 const C = { time: 1, stage: 2, grade: 3, subj: 4, round: 5, name: 6, cls: 7, score: 8, secs: 9, dev: 10 }; // أرقام الأعمدة
 
 function sheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
   let sh = ss.getSheetByName(SHEET_NAME);
   if (!sh) {
     sh = ss.insertSheet(SHEET_NAME);
