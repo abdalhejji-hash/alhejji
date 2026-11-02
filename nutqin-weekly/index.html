@@ -249,7 +249,10 @@ function play(wi, name, cls){
 }
 
 home();
-loadBoard().then(() => { if(!document.querySelector('.opt') && !document.querySelector('.cert')) home(); });
+function refresh(){ loadBoard().then(() => { if(!document.querySelector('.opt') && !document.querySelector('.cert') && !(document.activeElement && /INPUT|SELECT/.test(document.activeElement.tagName))) home(); }); }
+refresh();
+// تحديث لوحة الشرف تلقائيًا كل ٣٠ ثانية ما دامت الصفحة مفتوحة
+setInterval(() => { if(!document.hidden && API.indexOf('__') !== 0) refresh(); }, 30000);
 </script>
 </body>
 </html>
