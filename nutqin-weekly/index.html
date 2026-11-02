@@ -108,7 +108,7 @@ const fmtDate = s => FMT.format(new Date(s + 'T12:00:00+03:00'));
 
 let ROWS = null, BOARD_ERR = '';
 async function loadBoard(){
-  if(!API || API.indexOf('__') === 0){ BOARD_ERR = 'لم تُربط لوحة الشرف بعد.'; ROWS = []; return; }
+  if(!API || API.indexOf('__') === 0){ BOARD_ERR = 'لوحة الشرف المشتركة لم تُربط بعد، فتظهر هنا نتائج هذا الجهاز فقط.'; ROWS = []; return; }
   try{
     const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 12000);
     const r = await fetch(API + '?action=board&t=' + Date.now(), {signal: ctl.signal});
@@ -121,10 +121,20 @@ async function loadBoard(){
 function rank(list){
   return list.sort((a,b) => b.score - a.score || a.secs - b.secs || a.name.localeCompare(b.name, 'ar'));
 }
-function weekRows(w){ return rank(ROWS.filter(r => r.week === w).slice()); }
+function localRows(){
+  const out = [];
+  WEEKS.forEach((_, i) => { const d = LS.get('nq_done_' + (i+1)); if(d) out.push({week:i+1, name:d.name, cls:d.cls, score:d.score, secs:d.secs}); });
+  return out;
+}
+function allData(){
+  const base = (ROWS || []).slice();
+  localRows().forEach(l => { if(!base.some(r => r.week === l.week && r.name.trim() === l.name.trim())) base.push(l); });
+  return base;
+}
+function weekRows(w){ return rank(allData().filter(r => r.week === w)); }
 function allRows(){
   const m = {};
-  ROWS.forEach(r => { const k = r.name.trim(); if(!m[k]) m[k] = {name:k, cls:r.cls, score:0, secs:0, n:0}; m[k].score += r.score; m[k].secs += r.secs; m[k].n++; });
+  allData().forEach(r => { const k = r.name.trim(); if(!m[k]) m[k] = {name:k, cls:r.cls, score:0, secs:0, n:0}; m[k].score += r.score; m[k].secs += r.secs; m[k].n++; });
   return rank(Object.values(m));
 }
 function tableHTML(list, me, total){
@@ -144,7 +154,7 @@ function boardHTML(wi, me){
   else if(boardTab === 'cur') body = tableHTML(weekRows(wi + 1), me);
   else if(boardTab === 'prev') body = tableHTML(weekRows(wi), me);
   else body = tableHTML(allRows(), me, true);
-  return '<div class="card"><h2>🏅 لوحة الشرف</h2><div class="tabs">' + tabs.map(t => '<button data-tab="' + t[0] + '" class="' + (t[0] === boardTab ? 'on' : '') + '">' + t[1] + '</button>').join('') + '</div>' + body +
+  return '<div class="card" id="board"><h2>🏅 لوحة الشرف</h2><div class="tabs">' + tabs.map(t => '<button data-tab="' + t[0] + '" class="' + (t[0] === boardTab ? 'on' : '') + '">' + t[1] + '</button>').join('') + '</div>' + body +
     (BOARD_ERR ? '<div class="note">' + BOARD_ERR + '</div>' : '') + '</div>';
 }
 function wireTabs(rerender){
@@ -161,7 +171,7 @@ function home(){
   const w = WEEKS[wi];
   const done = LS.get('nq_done_' + (wi+1));
   const prof = LS.get('nq_prof', {name:'', cls:''});
-  let h = '<div class="ind"><div class="k">📌 محور الأسبوع ' + AR(wi+1) + '</div><div class="v">' + esc(SECS[w.sec]) + '</div></div>';
+  let h = '<a class="btn alt" href="#board" style="text-decoration:none;text-align:center;margin:0 0 14px">🏅 لوحة الشرف</a><div class="ind"><div class="k">📌 محور الأسبوع ' + AR(wi+1) + '</div><div class="v">' + esc(SECS[w.sec]) + '</div></div>';
   if(done){
     h += '<div class="card center"><h2>أحسنت يا ' + esc(done.name) + '!</h2><div class="big">' + AR(done.score) + '<small> / ١٠٠</small></div><p>أنهيت تحدّي هذا الأسبوع. تتغيّر الأسئلة يوم الأحد القادم.</p></div>';
   }else{
