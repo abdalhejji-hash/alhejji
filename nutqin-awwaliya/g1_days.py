@@ -438,3 +438,21 @@ def build():
                 qs.append({'s': s, 't': topic, 'stem': stem, 'opts': opts, 'ans': 0, 'ctx': [], 'img': ''})
         out.append({'date': date, 'q': qs})
     return out
+
+DATES = [d for d, _ in DAYS]
+
+def build_days(rows):
+    """rows: قائمة بطول DATES، كل عنصر {مادة: (الدرس، [(السؤال، الخيارات)...])}، والإجابة الصحيحة أول خيار."""
+    assert len(rows) == len(DATES), (len(rows), len(DATES))
+    out = []
+    for date, subj in zip(DATES, rows):
+        qs = []
+        for s in ['ar', 'ma', 'sc', 'is']:
+            topic, items = subj[s]
+            assert len(items) == 3, (date, s, topic)
+            for stem, opts in items:
+                opts = [str(o) for o in opts]
+                assert 2 <= len(opts) <= 4 and len(set(opts)) == len(opts), (date, stem)
+                qs.append({'s': s, 't': topic, 'stem': stem, 'opts': opts, 'ans': 0, 'ctx': [], 'img': ''})
+        out.append({'date': date, 'q': qs})
+    return out
