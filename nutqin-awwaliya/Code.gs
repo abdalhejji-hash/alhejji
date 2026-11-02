@@ -11,7 +11,7 @@ const ADMIN_PIN = '';
 const SHEET_ID = '';
 const SHEET_NAME = 'المحاولات';
 const HEADERS = ['الوقت', 'المرحلة', 'الصف', 'المادة', 'الجولة', 'الاسم', 'الفصل', 'الدرجة', 'الثواني', 'الجهاز'];
-const SUBJECTS = ['ar', 'ma', 'sc', 'is', 'en', 'sd', 'rd'];
+const SUBJECTS = ['ar', 'ma', 'sc', 'is', 'en', 'sd', 'rd', 'wk']; // wk = نموذج الأسبوع (تُحتسب المحاولة الأولى فقط)
 const C = { time: 1, stage: 2, grade: 3, subj: 4, round: 5, name: 6, cls: 7, score: 8, secs: 9, dev: 10 }; // أرقام الأعمدة
 
 function sheet_() {
@@ -65,7 +65,8 @@ function board_(p) {
     const k = name + '|' + r[C.subj - 1] + '|' + r[C.round - 1];
     const score = Number(r[C.score - 1]), secs = Number(r[C.secs - 1]);
     const cur = best[k];
-    if (!cur || score > cur.score || (score === cur.score && secs < cur.secs)) {
+    const wk = String(r[C.subj - 1]) === 'wk'; // نموذج الأسبوع: أول محاولة فقط
+    if (!cur || (!wk && (score > cur.score || (score === cur.score && secs < cur.secs)))) {
       best[k] = { name: name, cls: String(r[C.cls - 1]), subj: String(r[C.subj - 1]), round: Number(r[C.round - 1]), score: score, secs: secs };
     }
   });
@@ -84,7 +85,7 @@ function submit_(p) {
   const secs = Math.max(0, Math.min(36000, Math.round(Number(p.secs) || 0)));
   const dev = norm_(p.dev, 20);
   if (!/^\d{1,2}$/.test(grade) || SUBJECTS.indexOf(subj) < 0 || !(round >= 1 && round <= 200) ||
-      name.length < 3 || !(score >= 0 && score <= 100) || score % 5 !== 0) {
+      name.length < 3 || !(score >= 0 && score <= 100) || (subj !== 'wk' && score % 5 !== 0)) {
     return json_({ ok: false, error: 'bad input' });
   }
   const lock = LockService.getScriptLock();
@@ -149,12 +150,17 @@ function list_(stage) {
     if (Utilities.formatDate(t, tz, 'yyyy-MM-dd') === today) attemptsToday++;
     const grade = String(r[C.grade - 1]), name = norm_(r[C.name - 1]);
     const k = grade + '|' + name;
-    if (!m[k]) m[k] = { grade: grade, name: name, cls: String(r[C.cls - 1]), attempts: 0, best: {}, last: 0 };
+    if (!m[k]) m[k] = { grade: grade, name: name, cls: String(r[C.cls - 1]), attempts: 0, best: {}, weeks: {}, last: 0 };
     const s = m[k];
     s.attempts++;
     s.cls = String(r[C.cls - 1]) || s.cls;
     const rk = r[C.subj - 1] + ':' + r[C.round - 1];
-    s.best[rk] = Math.max(s.best[rk] || 0, Number(r[C.score - 1]));
+    if (String(r[C.subj - 1]) === 'wk') {
+      const w = String(r[C.round - 1]);
+      if (!(w in s.weeks)) s.weeks[w] = [Number(r[C.score - 1]), Number(r[C.secs - 1])]; // المحاولة الأولى
+    } else {
+      s.best[rk] = Math.max(s.best[rk] || 0, Number(r[C.score - 1]));
+    }
     s.last = Math.max(s.last, t.getTime());
   });
   const roundStats = {}; // "الصف|المادة|الجولة" -> عدد الطلاب، مجموع أفضل الدرجات، الدرجات الكاملة
@@ -167,7 +173,7 @@ function list_(stage) {
       r.n++; r.sum += s.best[x]; if (s.best[x] >= 100) r.full++;
     });
     return { grade: s.grade, name: s.name, cls: s.cls, attempts: s.attempts, rounds: rounds.length,
-             full: rounds.filter(x => s.best[x] >= 100).length, points: rounds.reduce((a, x) => a + s.best[x], 0), last: s.last };
+             full: rounds.filter(x => s.best[x] >= 100).length, points: rounds.reduce((a, x) => a + s.best[x], 0), weeks: s.weeks, last: s.last };
   });
   return json_({ ok: true, settings: settings_(stage), students: students, roundStats: roundStats, attempts: attempts, attemptsToday: attemptsToday });
 }
