@@ -1,11 +1,15 @@
-// تحدّي نُتقن — حفظ النتائج ولوحة الشرف
+// تحدّي نُتقن — حفظ النتائج ولوحة الشرف ولوحة المدير
 // مدرسة حكيم بن حزام الابتدائية وملحقتها الطريبيل المتوسطة
-// الصق هذا الكود كاملًا في: الإضافات ← Apps Script، ثم انشره تطبيق ويب (التنفيذ بصفة: أنا، الوصول: أي شخص).
-// يخدم الرابط نفسه الصفوف الأوّلية والعليا لاحقًا (عمود «المرحلة»).
+//
+// ١) اكتب كلمة مرور لوحة المدير بين علامتي التنصيص في السطر التالي (٦ أحرف أو أرقام على الأقل):
+const ADMIN_PIN = '';
+// ٢) الصق هذا الكود كاملًا في: الإضافات ← Apps Script، ثم انشره تطبيق ويب (التنفيذ بصفة: أنا، الوصول: أي شخص).
+// عند تغيير الكود لاحقًا: نشر ← إدارة عمليات النشر ← تعديل ← إصدار جديد، حتى يبقى الرابط نفسه.
 
 const SHEET_NAME = 'المحاولات';
 const HEADERS = ['الوقت', 'المرحلة', 'الصف', 'المادة', 'الجولة', 'الاسم', 'الفصل', 'الدرجة', 'الثواني', 'الجهاز'];
 const SUBJECTS = ['ar', 'ma', 'sc', 'is', 'en', 'sd', 'rd'];
+const C = { time: 1, stage: 2, grade: 3, subj: 4, round: 5, name: 6, cls: 7, score: 8, secs: 9, dev: 10 }; // أرقام الأعمدة
 
 function sheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -19,47 +23,55 @@ function sheet_() {
   }
   return sh;
 }
-
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
-
 function norm_(s, max) {
   return String(s || '').replace(/\s+/g, ' ').trim().slice(0, max || 60);
 }
+function allRows_() {
+  const sh = sheet_();
+  const n = sh.getLastRow() - 1;
+  return n < 1 ? [] : sh.getRange(2, 1, n, HEADERS.length).getValues();
+}
 
+// ===== الإعدادات (لكل مرحلة) =====
+function settings_(stage) {
+  const raw = PropertiesService.getScriptProperties().getProperty('settings_' + stage);
+  const d = { open: true, board: true, msg: '' };
+  if (!raw) return d;
+  try { const s = JSON.parse(raw); return { open: s.open !== false, board: s.board !== false, msg: String(s.msg || '') }; } catch (e) { return d; }
+}
+
+// ===== طلبات الطلاب (GET) =====
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.action === 'submit') return submit_(p);
   return board_(p);
 }
 
-// لوحة الشرف: أفضل درجة لكل طالب في كل جولة، لصفٍّ واحد
 function board_(p) {
   const stage = norm_(p.stage, 20) || 'primary';
   const grade = norm_(p.grade, 4);
-  const sh = sheet_();
-  const n = sh.getLastRow() - 1;
-  if (n < 1) return json_({ ok: true, rows: [] });
-  const vals = sh.getRange(2, 2, n, 8).getValues(); // المرحلة، الصف، المادة، الجولة، الاسم، الفصل، الدرجة، الثواني
+  const st = settings_(stage);
+  if (!st.board) return json_({ ok: true, settings: st, rows: [] });
   const best = {};
-  vals.forEach(r => {
-    if (String(r[0]) !== stage || String(r[1]) !== grade || !r[4]) return;
-    const name = norm_(r[4]);
-    const k = name + '|' + r[2] + '|' + r[3];
-    const score = Number(r[6]), secs = Number(r[7]);
+  allRows_().forEach(r => {
+    if (String(r[C.stage - 1]) !== stage || String(r[C.grade - 1]) !== grade || !r[C.name - 1]) return;
+    const name = norm_(r[C.name - 1]);
+    const k = name + '|' + r[C.subj - 1] + '|' + r[C.round - 1];
+    const score = Number(r[C.score - 1]), secs = Number(r[C.secs - 1]);
     const cur = best[k];
     if (!cur || score > cur.score || (score === cur.score && secs < cur.secs)) {
-      best[k] = { name: name, cls: String(r[5]), subj: String(r[2]), round: Number(r[3]), score: score, secs: secs };
-    } else if (cur) {
-      cur.cls = String(r[5]) || cur.cls;
+      best[k] = { name: name, cls: String(r[C.cls - 1]), subj: String(r[C.subj - 1]), round: Number(r[C.round - 1]), score: score, secs: secs };
     }
   });
-  return json_({ ok: true, rows: Object.keys(best).map(k => best[k]) });
+  return json_({ ok: true, settings: st, rows: Object.keys(best).map(k => best[k]) });
 }
 
 function submit_(p) {
   const stage = norm_(p.stage, 20) || 'primary';
+  if (!settings_(stage).open) return json_({ ok: false, error: 'closed' });
   const grade = norm_(p.grade, 4);
   const subj = norm_(p.subj, 4);
   const round = Math.round(Number(p.round));
@@ -77,6 +89,103 @@ function submit_(p) {
   try {
     sheet_().appendRow([new Date(), stage, grade, subj, round, name, cls, score, secs, dev]);
     return json_({ ok: true });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// ===== لوحة المدير (POST، بكلمة مرور) =====
+function doPost(e) {
+  let b = {};
+  try { b = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'bad request' }); }
+  const cache = CacheService.getScriptCache();
+  const fails = Number(cache.get('pin_fails') || 0);
+  if (fails >= 5) return json_({ ok: false, error: 'locked' }); // ٥ محاولات خاطئة: إيقاف ١٠ دقائق
+  if (!ADMIN_PIN || String(ADMIN_PIN).length < 6) return json_({ ok: false, error: 'no pin' });
+  if (String(b.pin || '') !== String(ADMIN_PIN)) {
+    cache.put('pin_fails', String(fails + 1), 600);
+    return json_({ ok: false, error: 'wrong pin' });
+  }
+  const stage = norm_(b.stage, 20) || 'primary';
+  switch (b.op) {
+    case 'login': return json_({ ok: true });
+    case 'list': return list_(stage);
+    case 'rename': return edit_(stage, norm_(b.grade, 4), norm_(b.name), function (row) { row[C.name - 1] = norm_(b.to); });
+    case 'setcls': return edit_(stage, norm_(b.grade, 4), norm_(b.name), function (row) { row[C.cls - 1] = norm_(b.cls, 10); });
+    case 'delete': return delete_(stage, norm_(b.grade, 4), norm_(b.name));
+    case 'settings':
+      const cur = settings_(stage);
+      const next = { open: b.open === undefined ? cur.open : !!b.open, board: b.board === undefined ? cur.board : !!b.board, msg: b.msg === undefined ? cur.msg : norm_(b.msg, 200) };
+      PropertiesService.getScriptProperties().setProperty('settings_' + stage, JSON.stringify(next));
+      return json_({ ok: true, settings: next });
+  }
+  return json_({ ok: false, error: 'unknown op' });
+}
+
+function list_(stage) {
+  const tz = Session.getScriptTimeZone();
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const m = {};
+  let attempts = 0, attemptsToday = 0;
+  allRows_().forEach(r => {
+    if (String(r[C.stage - 1]) !== stage || !r[C.name - 1]) return;
+    attempts++;
+    const t = r[C.time - 1] instanceof Date ? r[C.time - 1] : new Date(r[C.time - 1]);
+    if (Utilities.formatDate(t, tz, 'yyyy-MM-dd') === today) attemptsToday++;
+    const grade = String(r[C.grade - 1]), name = norm_(r[C.name - 1]);
+    const k = grade + '|' + name;
+    if (!m[k]) m[k] = { grade: grade, name: name, cls: String(r[C.cls - 1]), attempts: 0, best: {}, last: 0 };
+    const s = m[k];
+    s.attempts++;
+    s.cls = String(r[C.cls - 1]) || s.cls;
+    const rk = r[C.subj - 1] + ':' + r[C.round - 1];
+    s.best[rk] = Math.max(s.best[rk] || 0, Number(r[C.score - 1]));
+    s.last = Math.max(s.last, t.getTime());
+  });
+  const students = Object.keys(m).map(k => {
+    const s = m[k];
+    const rounds = Object.keys(s.best);
+    return { grade: s.grade, name: s.name, cls: s.cls, attempts: s.attempts, rounds: rounds.length, points: rounds.reduce((a, x) => a + s.best[x], 0), last: s.last };
+  });
+  return json_({ ok: true, settings: settings_(stage), students: students, attempts: attempts, attemptsToday: attemptsToday });
+}
+
+function edit_(stage, grade, name, fn) {
+  if (!name) return json_({ ok: false, error: 'bad input' });
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sh = sheet_();
+    const n = sh.getLastRow() - 1;
+    if (n < 1) return json_({ ok: true, changed: 0 });
+    const rng = sh.getRange(2, 1, n, HEADERS.length);
+    const vals = rng.getValues();
+    let changed = 0;
+    vals.forEach(r => {
+      if (String(r[C.stage - 1]) === stage && String(r[C.grade - 1]) === grade && norm_(r[C.name - 1]) === name) { fn(r); changed++; }
+    });
+    if (changed) rng.setValues(vals);
+    return json_({ ok: true, changed: changed });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function delete_(stage, grade, name) {
+  if (!name) return json_({ ok: false, error: 'bad input' });
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sh = sheet_();
+    const vals = allRows_();
+    let removed = 0;
+    for (let i = vals.length - 1; i >= 0; i--) { // من الأسفل حتى لا تتغير أرقام الصفوف
+      const r = vals[i];
+      if (String(r[C.stage - 1]) === stage && String(r[C.grade - 1]) === grade && norm_(r[C.name - 1]) === name) {
+        sh.deleteRow(i + 2); removed++;
+      }
+    }
+    return json_({ ok: true, removed: removed });
   } finally {
     lock.releaseLock();
   }

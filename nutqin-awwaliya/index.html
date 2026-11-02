@@ -127,7 +127,7 @@ function bests(){ return LS.get(bestKey(), {}); } // "ma:3" -> {score, secs}
 function setBest(k, v){ const b = bests(); b[k] = v; LS.set(bestKey(), b); }
 
 // ===== لوحة الشرف =====
-let ROWS = {}, BERR = '';
+let ROWS = {}, BERR = '', SET = {open:true, board:true, msg:''};
 async function loadBoard(g){
   if(!linked()){ BERR = 'لوحة الشرف المشتركة لم تُربط بعد، فتظهر هنا نتائج هذا الجهاز فقط.'; ROWS[g] = ROWS[g] || []; return; }
   try{
@@ -135,6 +135,7 @@ async function loadBoard(g){
     const r = await fetch(API + '?action=board&stage=' + STAGE + '&grade=' + g + '&t=' + Date.now(), {signal: ctl.signal});
     clearTimeout(t);
     const j = await r.json();
+    if(j.settings) SET = j.settings;
     ROWS[g] = (j.rows || []).map(x => ({name:String(x.name), cls:String(x.cls||''), subj:String(x.subj), round:+x.round, score:+x.score, secs:+x.secs}));
     BERR = '';
   }catch(e){ BERR = 'تعذّر تحميل لوحة الشرف الآن.'; ROWS[g] = ROWS[g] || []; }
@@ -184,7 +185,8 @@ function board(){
   BT.g = g;
   const tabs = [['st','الطلاب'],['cl','الفصول']].concat(SUBJ.map(s => [s[0], s[1]]));
   let body;
-  if(BT.tab === 'st') body = stTable(students(g));
+  if(!SET.board) body = '<div class="empty">لوحة الشرف مخفية حاليًا، وستعود قريبًا.</div>';
+  else if(BT.tab === 'st') body = stTable(students(g));
   else if(BT.tab === 'cl') body = clTable(classes(g));
   else body = stTable(students(g, BT.tab));
   app.innerHTML = '<button class="back" id="bk">→ رجوع</button><div class="card" id="board"><h2>🏅 لوحة الشرف</h2>' +
@@ -204,7 +206,7 @@ function home(){
   VIEW = 'home';
   const p = PROF || {name:'', grade:'', cls:''};
   let g = p.grade;
-  app.innerHTML = '<div class="card"><h2>مرحبًا بك في تحدّي نُتقن</h2><div class="muted">اختر صفّك واكتب اسمك، ثم ابدأ بأي مادة تحبّها. تستطيع إعادة أي جولة لترفع درجتك.</div>' +
+  app.innerHTML = banner() + '<div class="card"><h2>مرحبًا بك في تحدّي نُتقن</h2><div class="muted">اختر صفّك واكتب اسمك، ثم ابدأ بأي مادة تحبّها. تستطيع إعادة أي جولة لترفع درجتك.</div>' +
     '<label>الصف</label><div class="grades">' + GRADES.map(x => '<button data-g="' + x[0] + '" class="' + (x[0] === g ? 'on' : '') + '">' + x[1] + '</button>').join('') + '</div>' +
     '<label for="nm">اسم الطالب (الاسم الثلاثي)</label><input id="nm" autocomplete="name" value="' + esc(p.name) + '" placeholder="مثال: محمد أحمد علي">' +
     '<label for="cl">الفصل</label><select id="cl"></select>' +
@@ -229,6 +231,12 @@ function home(){
     loadBoard(g).then(() => { if(VIEW === 'subjects') subjects(); });
   };
 }
+function banner(){
+  let h = '';
+  if(SET.msg) h += '<div class="card" style="background:#FFF8E1;border-color:#E8D9A8"><b style="color:#13435A">📢 ' + esc(SET.msg) + '</b></div>';
+  if(!SET.open) h += '<div class="card center" style="border-color:#C2410C"><b style="color:#C2410C">التحدّي متوقف مؤقتًا</b><div class="muted">تستطيع مشاهدة لوحة الشرف، وسيُفتح التحدّي قريبًا.</div></div>';
+  return h;
+}
 function whoBar(){
   const gname = GRADES.find(x => x[0] === PROF.grade)[1];
   const total = Object.values(bests()).reduce((a, b) => a + b.score, 0);
@@ -245,14 +253,14 @@ function myRank(){
 function subjects(){
   VIEW = 'subjects';
   const D = DATA[PROF.grade], b = bests();
-  app.innerHTML = whoBar() + '<div class="subs">' + SUBJ.map(s => {
+  app.innerHTML = banner() + whoBar() + '<div class="subs">' + SUBJ.map(s => {
     const rs = D[s[0]].rounds, done = rs.filter((_, i) => b[s[0] + ':' + (i+1)]).length;
     const pts = rs.reduce((a, _, i) => a + ((b[s[0] + ':' + (i+1)] || {}).score || 0), 0);
     return '<button class="sub" data-s="' + s[0] + '"><span class="ic" style="background:' + s[2] + '1A"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="' + s[2] + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + s[3] + '</svg></span><span class="nm">' + s[1] + '</span><span class="muted">' + AR(done) + ' من ' + AR(rs.length) + ' جولة • ' + AR(pts) + ' نقطة</span><span class="prog"><i style="width:' + Math.round(done / rs.length * 100) + '%"></i></span></button>';
   }).join('') + '</div>' +
   '<a class="btn alt" id="lb" href="#board" style="margin-top:14px">🏅 لوحة الشرف' + (myRank() ? ' — ' + myRank() : '') + '</a>';
   wireWho();
-  app.querySelectorAll('[data-s]').forEach(x => x.onclick = () => rounds(x.dataset.s));
+  app.querySelectorAll('[data-s]').forEach(x => x.onclick = () => { if(SET.open) rounds(x.dataset.s); });
   document.getElementById('lb').onclick = e => { e.preventDefault(); BT.g = PROF.grade; board(); };
   window.scrollTo(0, 0);
 }
@@ -271,7 +279,7 @@ function rounds(s){
   app.innerHTML = h;
   wireWho();
   document.getElementById('bk').onclick = subjects;
-  app.querySelectorAll('[data-r]').forEach(x => x.onclick = () => play(s, +x.dataset.r));
+  app.querySelectorAll('[data-r]').forEach(x => x.onclick = () => { if(SET.open) play(s, +x.dataset.r); else subjects(); });
   window.scrollTo(0, 0);
 }
 
@@ -339,7 +347,7 @@ function play(s, ri){
     try{
       const q = new URLSearchParams({action:'submit', stage:STAGE, grade:PROF.grade, subj:s, round:ri+1, name:PROF.name, cls:PROF.cls, score:S.score, secs, dev:devId()});
       const j = await (await fetch(API + '?' + q.toString())).json();
-      sv.textContent = j.ok ? 'حُفظت درجتك في لوحة الشرف ✓' : 'تعذّر الحفظ، أخبر معلمك.';
+      sv.textContent = j.ok ? 'حُفظت درجتك في لوحة الشرف ✓' : (j.error === 'closed' ? 'التحدّي متوقف الآن، فلم تُحفظ الدرجة في لوحة الشرف.' : 'تعذّر الحفظ، أخبر معلمك.');
       await loadBoard(PROF.grade);
     }catch(e){ sv.textContent = 'تعذّر الاتصال بلوحة الشرف الآن، ودرجتك محفوظة على هذا الجهاز.'; }
   }
@@ -348,6 +356,7 @@ function play(s, ri){
 
 // ===== البداية =====
 if(PROF && DATA[PROF.grade]) subjects(); else home();
+if(!PROF) loadBoard('1').then(() => { if(VIEW === 'home' && (SET.msg || !SET.open)) home(); });
 function refresh(){
   const g = VIEW === 'board' ? BT.g : (PROF ? PROF.grade : null);
   if(!g) return;
