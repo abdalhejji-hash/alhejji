@@ -355,7 +355,7 @@ function play(s, ri){
 }
 
 // ===== البداية =====
-if(PROF && DATA[PROF.grade]) subjects(); else home();
+if(location.hash === '#board'){ BT.g = PROF ? PROF.grade : '1'; board(); } else if(PROF && DATA[PROF.grade]) subjects(); else home();
 if(!PROF) loadBoard('1').then(() => { if(VIEW === 'home' && (SET.msg || !SET.open)) home(); });
 function refresh(){
   const g = VIEW === 'board' ? BT.g : (PROF ? PROF.grade : null);

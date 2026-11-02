@@ -142,12 +142,19 @@ function list_(stage) {
     s.best[rk] = Math.max(s.best[rk] || 0, Number(r[C.score - 1]));
     s.last = Math.max(s.last, t.getTime());
   });
+  const roundStats = {}; // "الصف|المادة|الجولة" -> عدد الطلاب، مجموع أفضل الدرجات، الدرجات الكاملة
   const students = Object.keys(m).map(k => {
     const s = m[k];
     const rounds = Object.keys(s.best);
-    return { grade: s.grade, name: s.name, cls: s.cls, attempts: s.attempts, rounds: rounds.length, points: rounds.reduce((a, x) => a + s.best[x], 0), last: s.last };
+    rounds.forEach(x => {
+      const key = s.grade + '|' + x.replace(':', '|');
+      const r = roundStats[key] || (roundStats[key] = { n: 0, sum: 0, full: 0 });
+      r.n++; r.sum += s.best[x]; if (s.best[x] >= 100) r.full++;
+    });
+    return { grade: s.grade, name: s.name, cls: s.cls, attempts: s.attempts, rounds: rounds.length,
+             full: rounds.filter(x => s.best[x] >= 100).length, points: rounds.reduce((a, x) => a + s.best[x], 0), last: s.last };
   });
-  return json_({ ok: true, settings: settings_(stage), students: students, attempts: attempts, attemptsToday: attemptsToday });
+  return json_({ ok: true, settings: settings_(stage), students: students, roundStats: roundStats, attempts: attempts, attemptsToday: attemptsToday });
 }
 
 function edit_(stage, grade, name, fn) {
