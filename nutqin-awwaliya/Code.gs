@@ -11,7 +11,8 @@ const ADMIN_PIN = '';
 const SHEET_ID = '';
 const SHEET_NAME = 'المحاولات';
 const HEADERS = ['الوقت', 'المرحلة', 'الصف', 'المادة', 'الجولة', 'الاسم', 'الفصل', 'الدرجة', 'الثواني', 'الجهاز'];
-const SUBJECTS = ['ar', 'ma', 'sc', 'is', 'en', 'sd', 'rd', 'wk']; // wk = نموذج الأسبوع (تُحتسب المحاولة الأولى فقط)
+const SUBJECTS = ['ar', 'ma', 'sc', 'is', 'en', 'sd', 'rd', 'wk', 'dy']; // wk = نموذج الأسبوع، dy = مجموعة اليوم (تُحتسب المحاولة الأولى فقط)
+const FIRST_ONLY = ['wk', 'dy'];
 const C = { time: 1, stage: 2, grade: 3, subj: 4, round: 5, name: 6, cls: 7, score: 8, secs: 9, dev: 10 }; // أرقام الأعمدة
 
 function sheet_() {
@@ -65,7 +66,7 @@ function board_(p) {
     const k = name + '|' + r[C.subj - 1] + '|' + r[C.round - 1];
     const score = Number(r[C.score - 1]), secs = Number(r[C.secs - 1]);
     const cur = best[k];
-    const wk = String(r[C.subj - 1]) === 'wk'; // نموذج الأسبوع: أول محاولة فقط
+    const wk = FIRST_ONLY.indexOf(String(r[C.subj - 1])) >= 0; // أول محاولة فقط
     if (!cur || (!wk && (score > cur.score || (score === cur.score && secs < cur.secs)))) {
       best[k] = { name: name, cls: String(r[C.cls - 1]), subj: String(r[C.subj - 1]), round: Number(r[C.round - 1]), score: score, secs: secs };
     }
@@ -85,7 +86,7 @@ function submit_(p) {
   const secs = Math.max(0, Math.min(36000, Math.round(Number(p.secs) || 0)));
   const dev = norm_(p.dev, 20);
   if (!/^\d{1,2}$/.test(grade) || SUBJECTS.indexOf(subj) < 0 || !(round >= 1 && round <= 200) ||
-      name.length < 3 || !(score >= 0 && score <= 100) || (subj !== 'wk' && score % 5 !== 0)) {
+      name.length < 3 || !(score >= 0 && score <= 100) || (FIRST_ONLY.indexOf(subj) < 0 && score % 5 !== 0)) {
     return json_({ ok: false, error: 'bad input' });
   }
   const lock = LockService.getScriptLock();
@@ -155,8 +156,8 @@ function list_(stage) {
     s.attempts++;
     s.cls = String(r[C.cls - 1]) || s.cls;
     const rk = r[C.subj - 1] + ':' + r[C.round - 1];
-    if (String(r[C.subj - 1]) === 'wk') {
-      const w = String(r[C.round - 1]);
+    if (FIRST_ONLY.indexOf(String(r[C.subj - 1])) >= 0) {
+      const w = (String(r[C.subj - 1]) === 'dy' ? 'd' : '') + r[C.round - 1]; // "3" للأسبوع، "d3" لليوم
       if (!(w in s.weeks)) s.weeks[w] = [Number(r[C.score - 1]), Number(r[C.secs - 1])]; // المحاولة الأولى
     } else {
       s.best[rk] = Math.max(s.best[rk] || 0, Number(r[C.score - 1]));
