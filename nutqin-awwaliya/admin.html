@@ -258,7 +258,7 @@ function render(){
         '<div class="ops">' + q.opts.map((o, j) => '<span class="' + (j === q.ans ? 'y' : '') + '">' + L[j] + ') ' + esc(o) + (j === q.ans ? ' ✓' : '') + '</span>').join('&nbsp;&nbsp; ') + '</div></div>'; }).join('')).join('') + (DAYS(V.g) && !DAYS(V.g).some(d => weekOfDate(d.date) === V.w) ? '<div class="empty">لم تُجهَّز مجموعات هذا الأسبوع بعد.</div>' : '') +
     '</div><div>' +
       '<div class="sec-h"><h2>🏅 أبطال الأسبوع ' + AR(wk) + ' — الصف ' + GNAME[V.g] + '</h2></div>' +
-      (wkList.length ? '<div class="champ">بطل الأسبوع: <b>' + esc(wkList[0].name) + '</b> <small>' + esc(wkList[0].cls) + ' • ' + AR(ws(wkList[0], wk)[0]) + ' من ' + AR(100 * ws(wkList[0], wk)[2]) + '</small></div><div class="top"><ol>' + wkList.slice(0, 10).map((s, i) => '<li><span>' + medal(i) + esc(s.name) + ' <small class="muted">' + esc(s.cls) + '</small></span><b>' + AR(ws(s, wk)[0]) + ' <small class="muted">' + AR(Math.floor(ws(s, wk)[1]/60)) + 'د' + AR(ws(s, wk)[1]%60) + 'ث</small></b></li>').join('') + '</ol></div>' : '<div class="empty">لم يحلّ أحد هذا النموذج بعد.<br>أرسل الرابط لطلابك ليبدؤوا.</div>') +
+      (wkList.length ? '<div class="champ">بطل الأسبوع: <b>' + esc(wkList[0].name) + '</b> <small>' + AR(ws(wkList[0], wk)[0]) + ' من ' + AR(100 * ws(wkList[0], wk)[2]) + '</small></div><div class="top"><ol>' + wkList.slice(0, 10).map((s, i) => '<li><span>' + medal(i) + esc(s.name) + '</span><b>' + AR(ws(s, wk)[0]) + ' <small class="muted">' + AR(Math.floor(ws(s, wk)[1]/60)) + 'د' + AR(ws(s, wk)[1]%60) + 'ث</small></b></li>').join('') + '</ol></div>' : '<div class="empty">لم يحلّ أحد هذا النموذج بعد.<br>أرسل الرابط لطلابك ليبدؤوا.</div>') +
       '<div class="muted" style="margin:6px 0">عند التساوي يتقدّم الأسرع في الحل.</div>' +
       '<div class="exp noprint"><button class="e-pdf" id="pdf">📄 تقرير PDF</button><button class="e-xl" id="xw">📊 Excel هذا الأسبوع</button><button class="e-xl" id="xa">📊 Excel كل الأسابيع</button></div>' +
     '</div></div></div>';
@@ -267,13 +267,13 @@ function render(){
   list = list.slice().sort((a,b) => a.grade.localeCompare(b.grade) || wsum(b) - wsum(a));
   h += '<div class="card"><div class="sec-h"><h2>👥 الطلاب (' + AR(all.length) + ')</h2><span class="muted">«تعديل» يغيّر الاسم في كل النتائج ولوحة الشرف • «حذف» يزيل الطالب ونتائجه</span></div>' +
     '<div class="seg noprint">' + [['all','الكل']].concat(GRADES).map(g => '<button data-tg="' + g[0] + '" class="' + (g[0] === V.tg ? 'on' : '') + '">' + g[1] + '</button>').join('') + '</div>' +
-    '<input class="noprint" id="q" placeholder="بحث بالاسم أو الفصل" value="' + esc(V.q) + '" style="margin-bottom:10px">' +
-    (list.length ? '<div class="tbl"><table><thead><tr><th>#</th><th>الاسم</th><th>الصف</th><th>الفصل</th><th>المحتسبة</th><th>كاملة</th><th>المجموع</th><th>آخر نشاط</th><th class="noprint">إجراء</th></tr></thead><tbody>' +
+    '<input class="noprint" id="q" placeholder="بحث بالاسم" value="' + esc(V.q) + '" style="margin-bottom:10px">' +
+    (list.length ? '<div class="tbl"><table><thead><tr><th>#</th><th>الاسم</th><th>الصف</th><th>المحتسبة</th><th>كاملة</th><th>المجموع</th><th>آخر نشاط</th><th class="noprint">إجراء</th></tr></thead><tbody>' +
       list.map((s, i) => {
         const key = s.grade + '|' + s.name;
-        if(EDIT && EDIT.key === key) return '<tr><td colspan="9"><div class="edit">' + (EDIT.what === 'name' ? '<input id="ed" value="' + esc(s.name) + '" aria-label="الاسم الجديد">' : '<select id="ed" aria-label="الفصل الجديد">' + [1,2,3,4].map(n => AR(s.grade) + '/' + AR(n)).map(o => '<option' + (o === s.cls ? ' selected' : '') + '>' + o + '</option>').join('') + '</select>') + '<button class="btn sm" id="es">حفظ</button><button class="btn alt sm" id="ec">إلغاء</button></div></td></tr>';
-        return '<tr><td>' + AR(i+1) + '</td><td class="n">' + esc(s.name) + '</td><td>' + GNAME[s.grade] + '</td><td>' + esc(s.cls) + '</td><td>' + AR(wn(s)) + '</td><td>' + AR(wfull(s)) + '</td><td>' + AR(wsum(s)) + '</td><td>' + fmtTime(s.last) + '</td>' +
-          '<td class="act noprint"><button class="btn alt sm" data-a="name" data-k="' + esc(key) + '">✏️ تعديل</button><button class="btn alt sm" data-a="cls" data-k="' + esc(key) + '">الفصل</button><button class="btn red sm" data-a="del" data-k="' + esc(key) + '">حذف</button></td></tr>';
+        if(EDIT && EDIT.key === key) return '<tr><td colspan="8"><div class="edit">' + (EDIT.what === 'name' ? '<input id="ed" value="' + esc(s.name) + '" aria-label="الاسم الجديد">' : '<select id="ed" aria-label="الفصل الجديد">' + [1,2,3,4].map(n => AR(s.grade) + '/' + AR(n)).map(o => '<option' + (o === s.cls ? ' selected' : '') + '>' + o + '</option>').join('') + '</select>') + '<button class="btn sm" id="es">حفظ</button><button class="btn alt sm" id="ec">إلغاء</button></div></td></tr>';
+        return '<tr><td>' + AR(i+1) + '</td><td class="n">' + esc(s.name) + '</td><td>' + GNAME[s.grade] + '</td><td>' + AR(wn(s)) + '</td><td>' + AR(wfull(s)) + '</td><td>' + AR(wsum(s)) + '</td><td>' + fmtTime(s.last) + '</td>' +
+          '<td class="act noprint"><button class="btn alt sm" data-a="name" data-k="' + esc(key) + '">✏️ تعديل</button><button class="btn red sm" data-a="del" data-k="' + esc(key) + '">حذف</button></td></tr>';
       }).join('') + '</tbody></table></div>' : '<div class="empty">لا يوجد طلاب' + (V.q || V.tg !== 'all' ? ' بهذا البحث' : ' بعد') + '.</div>') + '</div>';
   // الإعدادات
   h += '<div class="card noprint"><div class="sec-h"><h2>⚙️ الإعدادات</h2></div>' +
@@ -294,8 +294,8 @@ function csv(rows, name){
   const s = '﻿' + rows.map(r => r.map(x => '"' + String(x).replace(/"/g, '""') + '"').join(',')).join('\r\n');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([s], {type:'text/csv'})); a.download = name; a.click();
 }
-function studentRows(list){ return [['الاسم','الصف','الفصل'].concat(STARTS.map((_, i) => 'الأسبوع ' + (i+1))).concat(['المجموع'])].concat(rank(list).map(s => [s.name, GNAME[s.grade], s.cls].concat(STARTS.map((_, i) => ws(s, i+1) ? ws(s, i+1)[0] : '')).concat([wsum(s)]))); }
-function weekRows(list, w){ return [['الترتيب','الاسم','الصف','الفصل','الدرجة','الوقت بالثواني']].concat(weekRank(list, w).map((s, i) => [i+1, s.name, GNAME[s.grade], s.cls, ws(s, w)[0], ws(s, w)[1]])); }
+function studentRows(list){ return [['الاسم','الصف'].concat(STARTS.map((_, i) => 'الأسبوع ' + (i+1))).concat(['المجموع'])].concat(rank(list).map(s => [s.name, GNAME[s.grade]].concat(STARTS.map((_, i) => ws(s, i+1) ? ws(s, i+1)[0] : '')).concat([wsum(s)]))); }
+function weekRows(list, w){ return [['الترتيب','الاسم','الصف','الدرجة','الوقت بالثواني']].concat(weekRank(list, w).map((s, i) => [i+1, s.name, GNAME[s.grade], ws(s, w)[0], ws(s, w)[1]])); }
 
 function wire(){
   const S = D.settings;

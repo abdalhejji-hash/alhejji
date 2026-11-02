@@ -126,6 +126,7 @@ const LS = {
 const linked = () => API && API.indexOf('__') !== 0;
 function devId(){ let d = LS.get('nq_dev'); if(!d){ d = Math.random().toString(36).slice(2,10); LS.set('nq_dev', d); } return d; }
 let PROF = LS.get('nqp_prof', null);
+if(PROF && PROF.grade) PROF.cls = GNAME[PROF.grade]; // لكل صف فصل واحد
 const recKey = () => 'nqw_' + PROF.grade + '_' + PROF.name;
 function recs(){ return LS.get(recKey(), {}); } // "3" للأسبوع أو "d3" لليوم -> {first:{score,secs}, best}
 function saveRec(w, score, secs){
@@ -190,8 +191,8 @@ const medal = i => i < 3 ? '<span class="medal m' + (i+1) + '">' + AR(i+1) + '</
 function stTable(list, total){
   if(!list.length) return '<div class="empty">لم يحلّ أحد بعد. كن أول الأبطال!</div>';
   const me = PROF && PROF.name;
-  return '<table><thead><tr><th>#</th><th>الاسم</th><th>الفصل</th><th>' + (total ? 'المجموع' : 'الدرجة') + '</th></tr></thead><tbody>' +
-    list.slice(0, 30).map((r, i) => '<tr class="' + (r.name === me ? 'me' : '') + '"><td class="r">' + medal(i) + '</td><td>' + esc(r.name) + '</td><td>' + esc(r.cls) + '</td><td>' + AR(r.score) + (total || r.n > 1 ? ' <small style="color:#6B6385">(' + AR(r.n) + (DAYS(BT.g || '1') ? ' أيام' : ' أسابيع') + ')</small>' : '') + '</td></tr>').join('') + '</tbody></table>';
+  return '<table><thead><tr><th>#</th><th>الاسم</th><th>' + (total ? 'المجموع' : 'الدرجة') + '</th></tr></thead><tbody>' +
+    list.slice(0, 30).map((r, i) => '<tr class="' + (r.name === me ? 'me' : '') + '"><td class="r">' + medal(i) + '</td><td>' + esc(r.name) + '</td><td>' + AR(r.score) + (total || r.n > 1 ? ' <small style="color:#6B6385">(' + AR(r.n) + (DAYS(BT.g || '1') ? ' أيام' : ' أسابيع') + ')</small>' : '') + '</td></tr>').join('') + '</tbody></table>';
 }
 function clTable(list){
   if(!list.length) return '<div class="empty">لا توجد نتائج بعد.</div>';
@@ -203,7 +204,7 @@ function board(){
   VIEW = 'board';
   const g = BT.g || (PROF ? PROF.grade : '1'); BT.g = g;
   const wi = weekIndex();
-  const tabs = [['cur','بطل الأسبوع']].concat(wi > 0 ? [['prev','الأسبوع الماضي']] : []).concat([['all','الترتيب العام'],['cl','الفصول']]);
+  const tabs = [['cur','بطل الأسبوع']].concat(wi > 0 ? [['prev','الأسبوع الماضي']] : []).concat([['all','الترتيب العام']]);
   if(!tabs.some(t => t[0] === BT.tab)) BT.tab = 'cur';
   let body;
   if(!SET.board) body = '<div class="empty">لوحة الشرف مخفية حاليًا، وستعود قريبًا.</div>';
@@ -211,7 +212,7 @@ function board(){
   else if(BT.tab === 'cur') body = '<div class="muted" style="margin-bottom:6px">' + (DAYS(g) ? 'الأسبوع ' + AR(wi+1) + ' • مجموع درجات مجموعات الأيام (المحاولة الأولى فقط)' : 'نموذج الأسبوع ' + AR(wi+1) + ' • تُحتسب المحاولة الأولى فقط') + '</div>' + stTable(weekRows(g, wi+1));
   else if(BT.tab === 'prev') body = '<div class="muted" style="margin-bottom:6px">' + (DAYS(g) ? 'الأسبوع ' : 'نموذج الأسبوع ') + AR(wi) + '</div>' + stTable(weekRows(g, wi));
   else if(BT.tab === 'all') body = stTable(allRows(g), true);
-  else body = clTable(classes(g));
+  else body = stTable(allRows(g), true);
   app.innerHTML = '<button class="back" id="bk">→ رجوع</button><div class="card" id="board"><h2>🏅 لوحة الشرف</h2>' +
     '<div class="grades" style="margin-bottom:10px">' + GRADES.map(x => '<button data-g="' + x[0] + '" class="' + (x[0] === g ? 'on' : '') + '">' + x[1] + '</button>').join('') + '</div>' +
     '<div class="tabs">' + tabs.map(t => '<button data-t="' + t[0] + '" class="' + (t[0] === BT.tab ? 'on' : '') + '">' + t[1] + '</button>').join('') + '</div>' +
@@ -237,24 +238,16 @@ function home(){
   app.innerHTML = banner() + '<div class="card"><h2>مرحبًا بك في تحدّي نُتقن</h2><div class="muted">كل يوم دراسي ١٢ سؤالًا جديدًا في المواد الأربع على تسلسل دروس المنهج، وتكريم أسبوعي للمركز الأول في كل صف.</div>' +
     '<label>الصف</label><div class="grades">' + GRADES.map(x => '<button data-g="' + x[0] + '" class="' + (x[0] === g ? 'on' : '') + '">' + x[1] + '</button>').join('') + '</div>' +
     '<label for="nm">اسم الطالب (الاسم الثلاثي)</label><input id="nm" autocomplete="name" value="' + esc(p.name) + '" placeholder="مثال: محمد أحمد علي">' +
-    '<label for="cl">الفصل</label><select id="cl"></select>' +
     '<div class="err" id="er"></div><button class="btn" id="go">ابدأ</button></div>' +
     '<button class="btn alt" id="lb">🏅 لوحة الشرف</button>';
-  const cl = document.getElementById('cl');
-  function fillCls(){
-    const opts = g ? [1,2,3,4].map(n => AR(g) + '/' + AR(n)) : [];
-    cl.innerHTML = '<option value="">' + (g ? 'اختر الفصل' : 'اختر الصف أولًا') + '</option>' + opts.map(o => '<option' + (p.cls === o ? ' selected' : '') + '>' + o + '</option>').join('');
-  }
-  fillCls();
-  app.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { g = b.dataset.g; app.querySelectorAll('[data-g]').forEach(x => x.classList.toggle('on', x === b)); fillCls(); });
+  app.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { g = b.dataset.g; app.querySelectorAll('[data-g]').forEach(x => x.classList.toggle('on', x === b)); });
   document.getElementById('lb').onclick = () => { BT.g = g || '1'; board(); loadBoard(BT.g).then(() => { if(VIEW === 'board') board(); }); };
   document.getElementById('go').onclick = () => {
     const name = document.getElementById('nm').value.replace(/\s+/g, ' ').trim();
     const er = document.getElementById('er');
     if(!g){ er.textContent = 'اختر صفّك.'; return; }
     if(name.split(' ').length < 2){ er.textContent = 'اكتب اسمك الثنائي أو الثلاثي.'; return; }
-    if(!cl.value){ er.textContent = 'اختر الفصل.'; return; }
-    PROF = {name, grade:g, cls:cl.value}; LS.set('nqp_prof', PROF);
+    PROF = {name, grade:g, cls:GNAME[g]}; LS.set('nqp_prof', PROF);
     main();
     loadBoard(g).then(() => { if(VIEW === 'main') main(); });
   };
@@ -270,7 +263,7 @@ function main(){
   if(DAYS(PROF.grade)) return mainDays();
   VIEW = 'main';
   const wi = weekIndex(), r = recs(), W = DATA.grades[PROF.grade].weeks;
-  let h = banner() + '<div class="who"><div><b>' + esc(PROF.name) + '</b><small>الصف ' + GNAME[PROF.grade] + ' • فصل ' + esc(PROF.cls) + '</small></div><button id="chg">تغيير</button></div>';
+  let h = banner() + '<div class="who"><div><b>' + esc(PROF.name) + '</b><small>الصف ' + GNAME[PROF.grade] + ' الابتدائي</small></div><button id="chg">تغيير</button></div>';
   if(wi < 0){
     h += '<div class="card center"><h2>يبدأ التحدّي يوم الأحد ' + fmtDate(STARTS[0]) + '</h2></div>';
   }else{
@@ -302,7 +295,7 @@ const PRIZE = '<div class="prize"><svg aria-hidden="true" width="30" height="30"
 function mainDays(){
   VIEW = 'main';
   const D = DAYS(PROF.grade), di = dayIndex(PROF.grade), r = recs(), wi = weekIndex();
-  let h = banner() + '<div class="who"><div><b>' + esc(PROF.name) + '</b><small>الصف ' + GNAME[PROF.grade] + ' • فصل ' + esc(PROF.cls) + '</small></div><button id="chg">تغيير</button></div>';
+  let h = banner() + '<div class="who"><div><b>' + esc(PROF.name) + '</b><small>الصف ' + GNAME[PROF.grade] + ' الابتدائي</small></div><button id="chg">تغيير</button></div>';
   if(di < 0){
     h += '<div class="card center"><h2>تبدأ المجموعات يوم ' + fmtDay(D[0].date) + '</h2></div>';
   }else{
