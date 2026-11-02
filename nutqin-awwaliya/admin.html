@@ -137,12 +137,28 @@ async function call(op, extra){
   const r = await fetch(API, {method:'POST', body: JSON.stringify(Object.assign({pin:PIN, op, stage:STAGE}, extra || {}))});
   return r.json();
 }
-const ERR = {'wrong pin':'كلمة المرور غير صحيحة.','locked':'محاولات خاطئة كثيرة، انتظر ١٠ دقائق.','no pin':'لم تُكتب كلمة المرور في الكود بعد (ADMIN_PIN).'};
+const ERR = {'wrong pin':'كلمة المرور غير صحيحة.','locked':'محاولات خاطئة كثيرة، انتظر ١٠ دقائق.','no pin':'أنشئ كلمة المرور أولًا.'};
 
 // ===== الدخول =====
-function login(msg){
+async function login(msg){
   who.innerHTML = '';
   if(!linked()){ root.innerHTML = '<div class="card login"><h2>اللوحة غير مربوطة بعد</h2><p class="muted">تعمل لوحة المعلم بعد ربط الموقع بجدول قوقل.</p></div>'; return; }
+  let setup = false;
+  try{ const st = await call('status'); setup = !!(st && st.setup); }catch(e){ root.innerHTML = '<div class="card login"><h2>تعذّر الاتصال بالجدول</h2><p class="muted">تأكد من الإنترنت ثم حدّث الصفحة.</p></div>'; return; }
+  if(setup){
+    root.innerHTML = '<form class="card login" id="sf"><h2 style="margin-top:0;color:#13435A">إنشاء كلمة مرور المعلم</h2><p class="muted">هذه أول مرة تفتح فيها اللوحة. اختر كلمة مرور (٦ أحرف أو أرقام على الأقل) واحفظها عندك.</p><label for="p1">كلمة المرور</label><input id="p1" type="password" autocomplete="new-password"><label for="p2" style="display:block;margin-top:8px">أعد كتابتها</label><input id="p2" type="password" autocomplete="new-password"><div class="msg err" id="m"></div><button class="btn" style="width:100%;margin-top:8px">حفظ ودخول</button></form>';
+    document.getElementById('p1').focus();
+    document.getElementById('sf').onsubmit = async e => {
+      e.preventDefault();
+      const a1 = document.getElementById('p1').value.trim(), a2 = document.getElementById('p2').value.trim(), m = document.getElementById('m');
+      if(a1.length < 6){ m.textContent = 'كلمة المرور قصيرة، اكتب ٦ أحرف أو أرقام على الأقل.'; return; }
+      if(a1 !== a2){ m.textContent = 'الكلمتان غير متطابقتين.'; return; }
+      m.textContent = 'جارٍ الحفظ…'; m.className = 'msg';
+      try{ const j = await call('setup', {newPin: a1}); if(!j.ok) throw 0; PIN = a1; try{ sessionStorage.setItem('nq_pin', PIN); }catch(e){} load('أُنشئت كلمة المرور'); }
+      catch(err){ m.textContent = 'تعذّر الحفظ.'; m.className = 'msg err'; }
+    };
+    return;
+  }
   root.innerHTML = '<form class="card login" id="lf"><h2 style="margin-top:0;color:#13435A">دخول المعلم</h2><label for="pw">كلمة المرور</label><input id="pw" type="password" autocomplete="current-password"><div class="msg err" id="m">' + (msg || '') + '</div><button class="btn" style="width:100%;margin-top:8px">دخول</button></form>';
   document.getElementById('pw').focus();
   document.getElementById('lf').onsubmit = async e => {

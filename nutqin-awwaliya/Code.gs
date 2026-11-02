@@ -1,9 +1,10 @@
 // تحدّي نُتقن — حفظ النتائج ولوحة الشرف ولوحة المدير
 // مدرسة حكيم بن حزام الابتدائية وملحقتها الطريبيل المتوسطة
 //
-// ١) اكتب كلمة مرور لوحة المدير بين علامتي التنصيص في السطر التالي (٦ أحرف أو أرقام على الأقل):
+// كلمة مرور لوحة المعلم تُنشأ من اللوحة نفسها عند أول دخول، وتُحفظ في خصائص هذا المشروع.
+// (اختياري) لإعادة تعيينها: اكتبها هنا بين علامتي التنصيص، وهي تتقدّم على المحفوظة.
 const ADMIN_PIN = '';
-// ٢) الصق هذا الكود كاملًا في: الإضافات ← Apps Script، ثم انشره تطبيق ويب (التنفيذ بصفة: أنا، الوصول: أي شخص).
+// الصق هذا الكود كاملًا في: الإضافات ← Apps Script، ثم انشره تطبيق ويب (التنفيذ بصفة: أنا، الوصول: أي شخص).
 // عند تغيير الكود لاحقًا: نشر ← إدارة عمليات النشر ← تعديل ← إصدار جديد، حتى يبقى الرابط نفسه.
 
 const SHEET_NAME = 'المحاولات';
@@ -101,8 +102,20 @@ function doPost(e) {
   const cache = CacheService.getScriptCache();
   const fails = Number(cache.get('pin_fails') || 0);
   if (fails >= 5) return json_({ ok: false, error: 'locked' }); // ٥ محاولات خاطئة: إيقاف ١٠ دقائق
-  if (!ADMIN_PIN || String(ADMIN_PIN).length < 6) return json_({ ok: false, error: 'no pin' });
-  if (String(b.pin || '') !== String(ADMIN_PIN)) {
+  const props = PropertiesService.getScriptProperties();
+  const saved = String(ADMIN_PIN || '') || props.getProperty('admin_pin') || '';
+  if (!saved) {
+    if (b.op === 'status') return json_({ ok: true, setup: true });
+    if (b.op === 'setup') {
+      const np = String(b.newPin || '');
+      if (np.length < 6) return json_({ ok: false, error: 'short pin' });
+      props.setProperty('admin_pin', np);
+      return json_({ ok: true });
+    }
+    return json_({ ok: false, error: 'no pin' });
+  }
+  if (b.op === 'status') return json_({ ok: true, setup: false });
+  if (String(b.pin || '') !== saved) {
     cache.put('pin_fails', String(fails + 1), 600);
     return json_({ ok: false, error: 'wrong pin' });
   }
