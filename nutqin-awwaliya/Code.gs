@@ -9,23 +9,35 @@ const ADMIN_PIN = '';
 
 // رقم جدول النتائج (من رابطه بين /d/ و /edit)، ويُترك فارغًا إذا كان الكود داخل الجدول نفسه.
 const SHEET_ID = '';
-const SHEET_NAME = 'المحاولات';
+const SHEET_NAME = 'المحاولات';            // الصفوف الأوّلية
+const SHEET_NAMES = { primary: SHEET_NAME, upper: 'الصفوف العليا' }; // لكل مرحلة ورقة مستقلة
 const HEADERS = ['الوقت', 'المرحلة', 'الصف', 'المادة', 'الجولة', 'الاسم', 'الفصل', 'الدرجة', 'الثواني', 'الجهاز'];
 const SUBJECTS = ['ar', 'ma', 'sc', 'is', 'en', 'sd', 'rd', 'wk', 'dy']; // wk = نموذج الأسبوع، dy = مجموعة اليوم (تُحتسب المحاولة الأولى فقط)
 const FIRST_ONLY = ['wk', 'dy'];
 const C = { time: 1, stage: 2, grade: 3, subj: 4, round: 5, name: 6, cls: 7, score: 8, secs: 9, dev: 10 }; // أرقام الأعمدة
 
-function sheet_() {
+function sheet_(stage) {
   const ss = SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
-  let sh = ss.getSheetByName(SHEET_NAME);
+  const name = SHEET_NAMES[stage] || SHEET_NAME;
+  let sh = ss.getSheetByName(name);
   if (!sh) {
-    sh = ss.insertSheet(SHEET_NAME);
+    sh = ss.insertSheet(name);
     sh.appendRow(HEADERS);
     sh.setFrozenRows(1);
-    sh.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#148E9D').setFontColor('#FFFFFF');
+    sh.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground(stage === 'upper' ? '#4F46E5' : '#148E9D').setFontColor('#FFFFFF');
     sh.setRightToLeft(true);
+    if (name !== SHEET_NAME) moveStageRows_(ss, stage, sh); // نقل نتائج هذه المرحلة المسجّلة سابقًا في الورقة العامة
   }
   return sh;
+}
+function moveStageRows_(ss, stage, target) {
+  const src = ss.getSheetByName(SHEET_NAME);
+  if (!src || src.getLastRow() < 2) return;
+  const vals = src.getRange(2, 1, src.getLastRow() - 1, HEADERS.length).getValues();
+  const mine = vals.filter(r => String(r[C.stage - 1]) === stage);
+  if (!mine.length) return;
+  target.getRange(2, 1, mine.length, HEADERS.length).setValues(mine);
+  for (let i = vals.length - 1; i >= 0; i--) if (String(vals[i][C.stage - 1]) === stage) src.deleteRow(i + 2);
 }
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
@@ -33,8 +45,8 @@ function json_(obj) {
 function norm_(s, max) {
   return String(s || '').replace(/\s+/g, ' ').trim().slice(0, max || 60);
 }
-function allRows_() {
-  const sh = sheet_();
+function allRows_(stage) {
+  const sh = sheet_(stage);
   const n = sh.getLastRow() - 1;
   return n < 1 ? [] : sh.getRange(2, 1, n, HEADERS.length).getValues();
 }
@@ -60,7 +72,7 @@ function board_(p) {
   const st = settings_(stage);
   if (!st.board) return json_({ ok: true, settings: st, rows: [] });
   const best = {};
-  allRows_().forEach(r => {
+  allRows_(stage).forEach(r => {
     if (String(r[C.stage - 1]) !== stage || String(r[C.grade - 1]) !== grade || !r[C.name - 1]) return;
     const name = norm_(r[C.name - 1]);
     const k = name + '|' + r[C.subj - 1] + '|' + r[C.round - 1];
@@ -92,7 +104,7 @@ function submit_(p) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    sheet_().appendRow([new Date(), stage, grade, subj, round, name, cls, score, secs, dev]);
+    sheet_(stage).appendRow([new Date(), stage, grade, subj, round, name, cls, score, secs, dev]);
     return json_({ ok: true });
   } finally {
     lock.releaseLock();
@@ -144,7 +156,7 @@ function list_(stage) {
   const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
   const m = {};
   let attempts = 0, attemptsToday = 0;
-  allRows_().forEach(r => {
+  allRows_(stage).forEach(r => {
     if (String(r[C.stage - 1]) !== stage || !r[C.name - 1]) return;
     attempts++;
     const t = r[C.time - 1] instanceof Date ? r[C.time - 1] : new Date(r[C.time - 1]);
@@ -184,7 +196,7 @@ function edit_(stage, grade, name, fn) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    const sh = sheet_();
+    const sh = sheet_(stage);
     const n = sh.getLastRow() - 1;
     if (n < 1) return json_({ ok: true, changed: 0 });
     const rng = sh.getRange(2, 1, n, HEADERS.length);
@@ -205,8 +217,8 @@ function delete_(stage, grade, name) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    const sh = sheet_();
-    const vals = allRows_();
+    const sh = sheet_(stage);
+    const vals = allRows_(stage);
     let removed = 0;
     for (let i = vals.length - 1; i >= 0; i--) { // من الأسفل حتى لا تتغير أرقام الصفوف
       const r = vals[i];
