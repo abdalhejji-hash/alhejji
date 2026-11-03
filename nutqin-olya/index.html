@@ -126,7 +126,9 @@ const LS = {
 };
 const linked = () => API && API.indexOf('__') !== 0;
 function devId(){ let d = LS.get('nq_dev'); if(!d){ d = Math.random().toString(36).slice(2,10); LS.set('nq_dev', d); } return d; }
-let PROF = LS.get('nqp_prof', null);
+const PKEY = STAGE === 'primary' ? 'nqp_prof' : 'nq_' + STAGE + '_prof'; // المرحلتان على نفس النطاق فنفصل التخزين
+let PROF = LS.get(PKEY, null);
+if(PROF && !DATA.grades[PROF.grade]) PROF = null;
 if(PROF && PROF.grade) PROF.cls = GNAME[PROF.grade]; // لكل صف فصل واحد
 const recKey = () => 'nqw_' + PROF.grade + '_' + PROF.name;
 function recs(){ return LS.get(recKey(), {}); } // "3" للأسبوع أو "d3" لليوم -> {first:{score,secs}, best}
@@ -248,7 +250,7 @@ function home(){
     const er = document.getElementById('er');
     if(!g){ er.textContent = 'اختر صفّك.'; return; }
     if(name.split(' ').length < 2){ er.textContent = 'اكتب اسمك الثنائي أو الثلاثي.'; return; }
-    PROF = {name, grade:g, cls:GNAME[g]}; LS.set('nqp_prof', PROF);
+    PROF = {name, grade:g, cls:GNAME[g]}; LS.set(PKEY, PROF);
     main();
     loadBoard(g).then(() => { if(VIEW === 'main') main(); });
   };
