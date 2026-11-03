@@ -135,7 +135,7 @@ const STARTS = DATA.starts;
 function weekIndex(){ const now = Date.now(); let idx = -1; STARTS.forEach((s, i) => { if(now >= Date.parse(s + 'T00:00:00+03:00')) idx = i; }); return idx; }
 const FMT = new Intl.DateTimeFormat('ar-SA-u-ca-gregory', {day:'numeric', month:'short', timeZone:'Asia/Riyadh'});
 const fmtD = s => FMT.format(new Date(s + 'T12:00:00+03:00'));
-let D = null, V = {g:'1', w:Math.max(0, weekIndex()), tg:'all', q:''}, EDIT = null;
+let D = null, V = {g:GRADES[0][0], w:Math.max(0, weekIndex()), tg:'all', q:''}, EDIT = null;
 // مجموع المحاولات الأولى في نماذج الأسابيع
 const wks = s => s.weeks || {};
 const wsum = s => Object.values(wks(s)).reduce((a, x) => a + x[0], 0);
