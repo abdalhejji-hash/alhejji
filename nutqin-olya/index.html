@@ -113,6 +113,7 @@ const DATA = {"starts":["2026-11-01","2026-11-08","2026-11-15","2026-11-29","202
 const STARTS = DATA.starts;
 const GRADES = [['4','الرابع'],['5','الخامس'],['6','السادس']];
 const GNAME = Object.fromEntries(GRADES);
+const G0 = GRADES[0][0]; // أول صف في هذه المرحلة
 const SNAME = {ar:'لغتي', ma:'الرياضيات', sc:'العلوم', is:'الدراسات الإسلامية'};
 const VALS = [20,15,10,5,0];
 const AR = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
@@ -202,7 +203,7 @@ function clTable(list){
 let BT = {g: null, tab: 'cur'};
 function board(){
   VIEW = 'board';
-  const g = BT.g || (PROF ? PROF.grade : '1'); BT.g = g;
+  const g = BT.g || (PROF && DATA.grades[PROF.grade] ? PROF.grade : G0); BT.g = g;
   const wi = weekIndex();
   const tabs = [['cur','بطل الأسبوع']].concat(wi > 0 ? [['prev','الأسبوع الماضي']] : []).concat([['all','الترتيب العام']]);
   if(!tabs.some(t => t[0] === BT.tab)) BT.tab = 'cur';
@@ -241,7 +242,7 @@ function home(){
     '<div class="err" id="er"></div><button class="btn" id="go">ابدأ</button></div>' +
     '<button class="btn alt" id="lb">🏅 لوحة الشرف</button>';
   app.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { g = b.dataset.g; app.querySelectorAll('[data-g]').forEach(x => x.classList.toggle('on', x === b)); });
-  document.getElementById('lb').onclick = () => { BT.g = g || '1'; board(); loadBoard(BT.g).then(() => { if(VIEW === 'board') board(); }); };
+  document.getElementById('lb').onclick = () => { BT.g = g || G0; board(); loadBoard(BT.g).then(() => { if(VIEW === 'board') board(); }); };
   document.getElementById('go').onclick = () => {
     const name = document.getElementById('nm').value.replace(/\s+/g, ' ').trim();
     const er = document.getElementById('er');
@@ -396,9 +397,9 @@ function play(kind, wi, counted){
 }
 
 // ===== البداية =====
-if(location.hash === '#board'){ BT.g = PROF ? PROF.grade : '1'; board(); } else if(PROF && DATA.grades[PROF.grade]) main(); else home();
+if(location.hash === '#board'){ BT.g = PROF && DATA.grades[PROF.grade] ? PROF.grade : G0; board(); } else if(PROF && DATA.grades[PROF.grade]) main(); else home();
 function refresh(){
-  const g = VIEW === 'board' ? BT.g : (PROF ? PROF.grade : '1');
+  const g = VIEW === 'board' ? BT.g : (PROF && DATA.grades[PROF.grade] ? PROF.grade : G0);
   loadBoard(g).then(() => { if(VIEW === 'board') board(); else if(VIEW === 'main') main(); else if(VIEW === 'home' && (SET.msg || !SET.open) && !(document.activeElement && /INPUT|SELECT/.test(document.activeElement.tagName))) home(); });
 }
 refresh();
