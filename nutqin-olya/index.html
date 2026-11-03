@@ -7,11 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
-:root{--navy:#4C1D95;--navy2:#5B21B6;--teal:#7C3AED;--gold:#F26B1D;--gold2:#FDBA74;--ice:#EDE7FB;--ink:#2E2A3D;--muted:#6B6385;--bg:#F6F3FD;--ok:#1E8E5A;--bad:#C2410C;--line:#E6DEF7}
+:root{--navy:#1E3A8A;--navy2:#3730A3;--teal:#4F46E5;--gold:#F26B1D;--gold2:#FDBA74;--ice:#E0E7FF;--ink:#2E2A3D;--muted:#5B6385;--bg:#F1F5FF;--ok:#1E8E5A;--bad:#C2410C;--line:#DCE3F7}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif;line-height:1.7}
 button{font:inherit;cursor:pointer;color:inherit}
-.top{background:linear-gradient(135deg,#4C1D95,#7C3AED);color:#fff;padding:16px 16px 20px;text-align:center}
+.top{background:linear-gradient(135deg,#1E3A8A,#4F46E5);color:#fff;padding:16px 16px 20px;text-align:center}
 .top .sch{font-size:15px;font-weight:700}
 .top .ini{font-size:13px;color:var(--gold2);font-weight:600}
 .top h1{margin:4px 0 0;font-size:30px;line-height:1.3}
@@ -24,18 +24,18 @@ button{font:inherit;cursor:pointer;color:inherit}
 .muted{color:var(--muted);font-size:14px}
 .pill{background:var(--ice);color:var(--navy);border-radius:999px;padding:2px 12px;font-weight:700;font-size:13px;white-space:nowrap}
 label{display:block;font-weight:600;font-size:14px;margin:10px 0 4px}
-input,select{width:100%;font:inherit;padding:11px 12px;border:1.5px solid #D9CCF5;border-radius:12px;background:#fff}
+input,select{width:100%;font:inherit;padding:11px 12px;border:1.5px solid #C7D2FE;border-radius:12px;background:#fff}
 input:focus,select:focus{outline:2px solid var(--teal);border-color:var(--teal)}
 .btn{display:block;width:100%;border:0;border-radius:14px;padding:12px;font-weight:700;font-size:17px;background:var(--navy);color:#fff;margin-top:12px;min-height:48px;text-align:center;text-decoration:none}
 .btn.alt{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
 .btn.gold{background:var(--gold);color:#fff}
 .err{color:var(--bad);font-size:14px;margin-top:6px;min-height:1em}
 .grades{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.grades button{border:2px solid #D9CCF5;background:#fff;border-radius:14px;padding:12px 6px;font-weight:700;font-size:18px;color:var(--navy);min-height:56px}
+.grades button{border:2px solid #C7D2FE;background:#fff;border-radius:14px;padding:12px 6px;font-weight:700;font-size:18px;color:var(--navy);min-height:56px}
 .grades button.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .who{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--navy2);color:#fff;border-radius:16px;padding:12px 16px;margin-bottom:14px}
 .who b{font-size:17px}.who small{color:var(--gold2);display:block;font-size:13px}
-.who button{background:transparent;border:1px solid #A78BFA;color:#fff;border-radius:10px;padding:4px 12px;font-size:13px;min-height:36px}
+.who button{background:transparent;border:1px solid #818CF8;color:#fff;border-radius:10px;padding:4px 12px;font-size:13px;min-height:36px}
 .wk{border:2px solid var(--teal);border-radius:20px;background:#fff;padding:18px;margin-bottom:14px}
 .wk .tag{display:inline-block;background:var(--teal);color:#fff;border-radius:999px;padding:2px 12px;font-size:13px;font-weight:700}
 .wk h2{margin:8px 0 2px;font-size:24px;color:var(--navy)}
@@ -55,10 +55,10 @@ input:focus,select:focus{outline:2px solid var(--teal);border-color:var(--teal)}
 .passage p{margin:4px 0}
 .qimg{display:block;max-width:100%;max-height:260px;margin:0 auto 12px;border-radius:12px}
 .subj{display:inline-block;background:var(--ice);color:var(--navy);border-radius:999px;padding:0 10px;font-size:13px;font-weight:700;margin-bottom:6px}
-.ind{background:#F5F0FF;border-right:4px solid var(--teal);border-radius:10px;padding:6px 12px;font-size:13px;color:var(--muted);margin-bottom:10px}
+.ind{background:#EEF2FF;border-right:4px solid var(--teal);border-radius:10px;padding:6px 12px;font-size:13px;color:var(--muted);margin-bottom:10px}
 .stem{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;gap:10px;align-items:flex-start}
 .say{flex:none;width:40px;height:40px;border-radius:20px;border:1.5px solid var(--teal);background:#fff;display:flex;align-items:center;justify-content:center}
-.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:right;background:#fff;border:1.5px solid #D9CCF5;border-radius:14px;padding:12px 14px;margin-bottom:10px;font-size:18px;min-height:54px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:right;background:#fff;border:1.5px solid #C7D2FE;border-radius:14px;padding:12px 14px;margin-bottom:10px;font-size:18px;min-height:54px}
 .opt span{white-space:pre-line}
 .opt b{flex:none;width:32px;height:32px;border-radius:16px;border:1.5px solid var(--teal);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:15px}
 .opt.bad{border-color:var(--bad);background:#FFF4EE;color:#8A2E07}
@@ -66,18 +66,18 @@ input:focus,select:focus{outline:2px solid var(--teal);border-color:var(--teal)}
 .opt.ok{border-color:var(--ok);background:#ECF8F1}
 .opt.ok b{background:var(--ok);border-color:var(--ok);color:#fff}
 .vals{display:flex;gap:6px;align-items:center;justify-content:center;font-size:13px;color:var(--muted);margin-top:4px;flex-wrap:wrap}
-.vals span{border:1px solid #D9CCF5;border-radius:8px;padding:0 8px}
+.vals span{border:1px solid #C7D2FE;border-radius:8px;padding:0 8px}
 .vals span.cur{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700}
 .note{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
 .big{font-size:54px;font-weight:700;color:var(--navy);text-align:center;line-height:1.2}
 .big small{font-size:20px;color:var(--muted)}
 .center{text-align:center}
 .tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
-.tabs button{flex:1;border:1.5px solid #D9CCF5;background:#fff;border-radius:12px;padding:8px;font-size:14px;font-weight:600;color:var(--navy);min-height:44px}
+.tabs button{flex:1;border:1.5px solid #C7D2FE;background:#fff;border-radius:12px;padding:8px;font-size:14px;font-weight:600;color:var(--navy);min-height:44px}
 .tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 table{width:100%;border-collapse:collapse;font-size:15px}
 th{background:var(--teal);color:#fff;font-weight:700;padding:8px;text-align:right}
-td{padding:8px;border-bottom:1px solid #EEE8FA}
+td{padding:8px;border-bottom:1px solid #E8EDFB}
 tr.me td{background:#FFF4E6;font-weight:700}
 td.r{width:44px;text-align:center;font-weight:700;color:var(--navy)}
 .medal{display:inline-block;width:26px;height:26px;border-radius:13px;line-height:26px;text-align:center;color:#fff;font-size:13px}
@@ -87,11 +87,11 @@ td.r{width:44px;text-align:center;font-weight:700;color:var(--navy)}
 .back{background:none;border:0;color:var(--teal);font-weight:700;padding:6px 0;margin-bottom:6px;min-height:40px}
 .cert{border:3px double var(--gold);border-radius:18px;padding:16px;text-align:center;background:#FFFBF5}
 footer{text-align:center;font-size:12px;color:var(--muted);padding:10px 0 24px}
-.chips span:nth-child(1){background:#FFEDD5;color:#C2410C}.chips span:nth-child(2){background:#EDE7FB;color:#5B21B6}.chips span:nth-child(3){background:#DCFCE7;color:#15803D}.chips span:nth-child(4){background:#DBEAFE;color:#1D4ED8}
-.wk{box-shadow:0 6px 20px rgba(124,58,237,.12)}.wk .tag{background:var(--gold)}
+.chips span:nth-child(1){background:#FFEDD5;color:#C2410C}.chips span:nth-child(2){background:#E0E7FF;color:#3730A3}.chips span:nth-child(3){background:#DCFCE7;color:#15803D}.chips span:nth-child(4){background:#DBEAFE;color:#1D4ED8}
+.wk{box-shadow:0 6px 20px rgba(79,70,229,.12)}.wk .tag{background:var(--gold)}
 th{background:var(--gold)}
 .btn.gold{box-shadow:0 4px 14px rgba(242,107,29,.35)}
-.prize{background:linear-gradient(135deg,#5B21B6,#7C3AED)}
+.prize{background:linear-gradient(135deg,#3730A3,#4F46E5)}
 .grades button.on,.tabs button.on{background:var(--gold);border-color:var(--gold)}
 </style>
 </head>
@@ -195,7 +195,7 @@ function stTable(list, total){
   if(!list.length) return '<div class="empty">لم يحلّ أحد بعد. كن أول الأبطال!</div>';
   const me = PROF && PROF.name;
   return '<table><thead><tr><th>#</th><th>الاسم</th><th>' + (total ? 'المجموع' : 'الدرجة') + '</th></tr></thead><tbody>' +
-    list.slice(0, 30).map((r, i) => '<tr class="' + (r.name === me ? 'me' : '') + '"><td class="r">' + medal(i) + '</td><td>' + esc(r.name) + '</td><td>' + AR(r.score) + (total || r.n > 1 ? ' <small style="color:#6B6385">(' + AR(r.n) + (DAYS(BT.g || '1') ? ' أيام' : ' أسابيع') + ')</small>' : '') + '</td></tr>').join('') + '</tbody></table>';
+    list.slice(0, 30).map((r, i) => '<tr class="' + (r.name === me ? 'me' : '') + '"><td class="r">' + medal(i) + '</td><td>' + esc(r.name) + '</td><td>' + AR(r.score) + (total || r.n > 1 ? ' <small style="color:#5B6385">(' + AR(r.n) + (DAYS(BT.g || '1') ? ' أيام' : ' أسابيع') + ')</small>' : '') + '</td></tr>').join('') + '</tbody></table>';
 }
 function clTable(list){
   if(!list.length) return '<div class="empty">لا توجد نتائج بعد.</div>';
@@ -230,7 +230,7 @@ function board(){
 let VIEW = 'home';
 function banner(){
   let h = '';
-  if(SET.msg) h += '<div class="card" style="background:#FFF4E6;border-color:#FDBA74"><b style="color:#4C1D95">📢 ' + esc(SET.msg) + '</b></div>';
+  if(SET.msg) h += '<div class="card" style="background:#FFF4E6;border-color:#FDBA74"><b style="color:#1E3A8A">📢 ' + esc(SET.msg) + '</b></div>';
   if(!SET.open) h += '<div class="card center" style="border-color:#C2410C"><b style="color:#C2410C">التحدّي متوقف مؤقتًا</b><div class="muted">تستطيع مشاهدة لوحة الشرف، وسيُفتح التحدّي قريبًا.</div></div>';
   return h;
 }
@@ -352,7 +352,7 @@ function play(kind, wi, counted){
       (function(){ if(it.t) return '<div class="ind">📌 ' + esc(it.t) + '</div>'; const x = (DATA.grades[PROF.grade].secs[it.s] || [])[it.sec]; return x ? '<div class="ind">📌 ' + esc(x[0]) + (x[1] ? ' — ' + esc(x[1]) : '') + '</div>' : ''; })() +
       (it.ctx && it.ctx.length ? '<div class="passage">' + it.ctx.map(p => '<p>' + esc(p) + '</p>').join('') + '</div>' : '') +
       (it.img ? '<img class="qimg" src="' + it.img + '" alt="صورة السؤال">' : '') +
-      '<div class="stem">' + (canSay ? '<button class="say" id="sy" aria-label="اقرأ السؤال"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M18.5 5.5a9 9 0 0 1 0 13"></path></svg></button>' : '') + '<span style="white-space:pre-line">' + esc(it.stem) + '</span></div>' +
+      '<div class="stem">' + (canSay ? '<button class="say" id="sy" aria-label="اقرأ السؤال"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M18.5 5.5a9 9 0 0 1 0 13"></path></svg></button>' : '') + '<span style="white-space:pre-line">' + esc(it.stem) + '</span></div>' +
       it.opts.map((o, j) => '<button class="opt' + (S.wrong.includes(j) ? ' bad' : '') + '" data-j="' + j + '"' + (S.wrong.includes(j) ? ' disabled' : '') + '><b>' + LETTERS[j] + '</b><span>' + esc(o) + '</span></button>').join('') +
       '<div class="vals">قيمة السؤال الآن: ' + VALS.map((v, k) => '<span class="' + (k === Math.min(S.tries, 4) ? 'cur' : '') + '">' + AR(v) + '</span>').join('') + '</div></div>';
     app.querySelectorAll('.opt').forEach(b => b.onclick = () => pick(+b.dataset.j, b));
@@ -375,8 +375,8 @@ function play(kind, wi, counted){
     const secs = Math.round((Date.now() - S.t0) / 1000);
     const score = Math.round(S.raw / (Q.length * 20) * 100);
     const first = saveRec(recId, score, secs) && counted;
-    app.innerHTML = '<div class="card center"><div class="cert"><div style="font-size:20px;font-weight:700;color:#4C1D95">' + (score >= 90 ? 'ممتاز! أداء بطل' : score >= 70 ? 'أحسنت!' : 'محاولة جيدة') + '</div>' +
-      '<div style="font-size:22px;font-weight:700;color:#7C3AED">' + esc(PROF.name) + '</div>' +
+    app.innerHTML = '<div class="card center"><div class="cert"><div style="font-size:20px;font-weight:700;color:#1E3A8A">' + (score >= 90 ? 'ممتاز! أداء بطل' : score >= 70 ? 'أحسنت!' : 'محاولة جيدة') + '</div>' +
+      '<div style="font-size:22px;font-weight:700;color:#4F46E5">' + esc(PROF.name) + '</div>' +
       '<div class="muted">' + title + ' • الصف ' + GNAME[PROF.grade] + '</div>' +
       '<div class="big">' + AR(score) + '<small> / ١٠٠</small></div><div class="muted">الوقت: ' + AR(Math.floor(secs/60)) + ' د ' + AR(secs%60) + ' ث</div></div>' +
       '<div class="note" id="sv">' + (first ? 'جارٍ حفظ درجتك في لوحة الشرف…' : 'محاولة تدريبية، لا تُحتسب في التكريم.') + '</div>' +

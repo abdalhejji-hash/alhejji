@@ -26,6 +26,11 @@ ADM = COMMON + [('https://abdalhejji-hash.github.io/alhejji/nutqin-awwaliya/', U
     '<a class="ini" style="display:block;text-decoration:none;color:inherit" href="../nutqin-olya/admin.html"><b>المواد الأربع • الصفوف العليا</b><small>تحدّي نُتقن (٤–٦) — لوحة مستقلة</small></a>' +""",
                  """    '<a class="ini" style="display:block;text-decoration:none;color:inherit" href="../nutqin-awwaliya/admin.html"><b>المواد الأربع • الصفوف الأوّلية</b><small>تحدّي نُتقن (١–٣) — لوحة مستقلة</small></a>' +
     '<button class="ini"><b>المواد الأربع • الصفوف العليا</b><small>تحدّي نُتقن — مدرسة حكيم بن حزام</small><span class="tag">' + (S.open ? 'مفتوحة' : 'موقوفة') + '</span></button>' +""")]
+# ألوان مختلفة قليلًا عن الصفوف الأوّلية: نيلي بدل البنفسجي، مع بقاء البرتقالي
+COLORS = [('#4C1D95', '#1E3A8A'), ('#5B21B6', '#3730A3'), ('#7C3AED', '#4F46E5'), ('#EDE7FB', '#E0E7FF'), ('#F6F3FD', '#F1F5FF'),
+          ('#E6DEF7', '#DCE3F7'), ('#D9CCF5', '#C7D2FE'), ('#A78BFA', '#818CF8'), ('#F5F0FF', '#EEF2FF'), ('#EEE8FA', '#E8EDFB'),
+          ('#6B6385', '#5B6385'), ('rgba(124,58,237', 'rgba(79,70,229')]
+STU = STU + COLORS
 os.makedirs(OUT, exist_ok=True)
 for src, name, reps in [('/home/claude/primary/template.html', 'index.html', STU), ('/home/claude/primary/admin_template.html', 'admin.html', ADM)]:
     h = open(src, encoding='utf-8').read()
