@@ -146,13 +146,16 @@ function weekIndex(){
   STARTS.forEach((s, i) => { if(now >= Date.parse(s + 'T00:00:00+03:00')) idx = i; });
   return idx;
 }
-const FMT = new Intl.DateTimeFormat('ar-SA-u-ca-gregory', {day:'numeric', month:'long', timeZone:'Asia/Riyadh'});
-const fmtDate = s => FMT.format(new Date(s + 'T12:00:00+03:00'));
-const FMTD = new Intl.DateTimeFormat('ar-SA-u-ca-gregory', {weekday:'long', day:'numeric', month:'long', timeZone:'Asia/Riyadh'});
-const fmtDay = s => FMTD.format(new Date(s + 'T12:00:00+03:00'));
+// تنسيق آمن للتاريخ: يعمل حتى على الأجهزة القديمة التي لا تدعم المنطقة الزمنية
+const MON = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'], WDN = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+function mkFmt(o){ try{ return new Intl.DateTimeFormat('ar-SA-u-ca-gregory', Object.assign({timeZone:'Asia/Riyadh'}, o)); }catch(e){ return null; } }
+const FMT = mkFmt({day:'numeric', month:'long'}), FMTD = mkFmt({weekday:'long', day:'numeric', month:'long'});
+function fbDate(s, wd){ const d = new Date(s + 'T12:00:00Z'); return (wd ? WDN[d.getUTCDay()] + '، ' : '') + AR(d.getUTCDate()) + ' ' + MON[d.getUTCMonth()]; }
+const fmtDate = s => { try{ return FMT ? FMT.format(new Date(s + 'T12:00:00+03:00')) : fbDate(s, false); }catch(e){ return fbDate(s, false); } };
+const fmtDay = s => { try{ return FMTD ? FMTD.format(new Date(s + 'T12:00:00+03:00')) : fbDate(s, true); }catch(e){ return fbDate(s, true); } };
 const DAYS = g => DATA.grades[g].days || null; // الصف الذي له مجموعات يومية
 function weekOf(date){ let idx = -1; STARTS.forEach((s, i) => { if(date >= s) idx = i; }); return idx; }
-function dayIndex(g){ const D = DAYS(g); if(!D) return -1; const today = new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Riyadh'}).format(new Date()); let idx = -1; D.forEach((d, i) => { if(d.date <= today) idx = i; }); return idx; }
+function dayIndex(g){ const D = DAYS(g); if(!D) return -1; const today = new Date(Date.now() + 3*3600e3).toISOString().slice(0, 10); let idx = -1; D.forEach((d, i) => { if(d.date <= today) idx = i; }); return idx; }
 
 // ===== لوحة الشرف =====
 let ROWS = {}, BERR = '', SET = {open:true, board:true, msg:''};
@@ -273,7 +276,7 @@ function main(){
     const x = r[wi+1], nxt = STARTS[wi+1];
     h += '<div class="prize"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FDBA74" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"></path><path d="M17 5h3v2a3 3 0 0 1-3 3"></path><path d="M7 5H4v2a3 3 0 0 0 3 3"></path></svg><div><small>التكريم الأسبوعي</small>جوائز وتكريم كل أسبوع للمركز الأول</div></div>';
     h += '<div class="wk"><span class="tag">نموذج الأسبوع ' + AR(wi+1) + '</span><h2>١٢ سؤالًا جديدًا</h2>' +
-      '<div class="muted">من الأحد ' + fmtDate(STARTS[wi]) + (nxt ? ' حتى السبت ' + FMT.format(new Date(Date.parse(nxt + 'T12:00:00+03:00') - 864e5)) : '') + '</div>' +
+      '<div class="muted">من الأحد ' + fmtDate(STARTS[wi]) + (nxt ? ' حتى السبت ' + fmtDate(new Date(Date.parse(nxt + 'T12:00:00Z') - 864e5).toISOString().slice(0, 10)) : '') + '</div>' +
       '<div class="chips"><span>لغتي ٣</span><span>الرياضيات ٣</span><span>العلوم ٣</span><span>الدراسات الإسلامية ٣</span></div>' +
       (x && x.first
         ? '<div class="done"><div><div class="muted">درجتك المحتسبة (المحاولة الأولى)</div><b>' + AR(x.first.score) + ' / ١٠٠</b><div class="muted">' + myWeekRank(wi+1) + '</div></div><button class="btn alt" id="pr" style="width:auto;margin:0;padding:8px 16px">تدرّب عليه مرة أخرى</button></div>'
